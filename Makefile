@@ -6,7 +6,7 @@ UV := uv --directory $(BACKEND_DIR)
 COMPOSE := docker compose --env-file $(BACKEND_DIR)/.env
 MESSAGE ?= schema change
 
-.PHONY: install dev front worker dev-down up test lint typecheck check migration-generate migration-migrate migration-push db-generate db-migrate db-push
+.PHONY: install dev front worker dev-down up test lint typecheck check migration-generate migration-migrate migration-push db-generate db-migrate db-push openapi
 
 install:
 	$(UV) sync
@@ -58,3 +58,7 @@ migration-migrate db-migrate:
 migration-push db-push:
 	$(MAKE) migration-generate MESSAGE="$(MESSAGE)"
 	$(MAKE) migration-migrate
+
+# Regenerate docs/api/openapi.json from the FastAPI app.
+openapi:
+	$(UV) run python -m scripts.export_openapi
