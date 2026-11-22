@@ -1,0 +1,74 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.006em;
+  white-space: nowrap;
+  transition:
+    background-color var(--t-base) ease,
+    color var(--t-base) ease,
+    transform var(--t-fast) ease,
+    opacity var(--t-base) ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+}
+
+.btn--primary {
+  color: #fff;
+  background: var(--accent);
+}
+.btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn--tinted {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.btn--tinted:hover:not(:disabled) {
+  background: var(--accent-soft-2);
+}
+
+.btn--plain {
+  color: var(--text-2);
+  background: var(--fill);
+}
+.btn--plain:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--fill-2);
+}
+
+.btn--icon {
+  width: 32px;
+  padding: 0;
+  color: var(--text-3);
+  background: transparent;
+}
+.btn--icon:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--fill);
+}
+
+.btn--danger:hover:not(:disabled) {
+  color: var(--red);
+  background: var(--red-soft);
+}
+
+.btn--lg {
+  height: 38px;
+  padding: 0 18px;
+  font-size: 14px;
+}

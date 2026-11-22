@@ -13,7 +13,7 @@ Current-state reference. Update it in the same change when you alter the stack, 
 | Config | pydantic-settings | Reads env vars and `backend/.env` |
 | Python tooling | uv | `pyproject.toml` + `uv.lock` in `backend/` |
 | Backend quality | flake8, mypy (strict + pydantic plugin), pytest | Tests run against real Postgres + Mongo |
-| Frontend | Vite + React 19 + TypeScript | pnpm 12 (pinned via `packageManager`); `oxlint` lint, `tsc -b` typecheck, Vitest + Testing Library (jsdom) tests |
+| Frontend | Vite + React 19 + TypeScript, anime.js v4 | pnpm 12 (pinned via `packageManager`); `oxlint` lint, `tsc -b` typecheck, Vitest + Testing Library (jsdom) tests |
 | CI | GitHub Actions | `.github/workflows/ci.yml`: `backend` and `frontend` jobs on every PR and push to `main` |
 | Frontend serving (Docker) | nginx | Serves the built SPA and reverse-proxies `/api/*` to the backend |
 | Orchestration | Docker Compose + Makefile | `make` targets wrap compose and uv |
@@ -67,7 +67,24 @@ As the app grows, follow the same layering KITH uses: `routes/` (HTTP) → `serv
 
 ## Frontend architecture
 
-Stock Vite React-TS scaffold for now. The frontend always calls the backend under `/api/...`:
+A single-page React app (no router dependency; a small hash router in `hooks/useHashRoute.ts`). It runs on sample data for now (`data/startups.ts`, all fictional); search is simulated.
+
+```
+src/
+├── App.tsx / App.css      # shell: sidebar + main column, quick-look modal state
+├── styles/                # global CSS: tokens, base, buttons, motion (imported via index.css)
+├── types/startup.ts       # Startup, Item, Folder types
+├── data/                  # folder metadata + sample startups
+├── hooks/                 # useStartups (reducer store), useHashRoute
+├── lib/                   # motion presets (anime.js springs), formatting helpers
+├── components/<Name>/     # one folder per component, its .tsx and .css side by side
+└── pages/<Name>/          # FolderPage (#/discover, #/watching, …), StartupPage (#/startup/:id)
+```
+
+- **Styling.** Plain CSS. Design tokens live in `styles/tokens.css`; each component imports its own stylesheet and uses BEM-style class names prefixed with the component (`card__title`, `sidebar__item`).
+- **Motion.** anime.js v4. Presets are in `lib/motion.ts` (critically damped springs for UI, short eased tweens for exits). Every animation checks `prefersReducedMotion()` and falls back to a fade.
+
+The frontend always calls the backend under `/api/...`:
 
 - **Dev:** the Vite dev proxy forwards `/api/*` to `http://127.0.0.1:8000`, stripping `/api`.
 - **Docker:** nginx forwards `/api/*` to `backend:8000`, stripping `/api` (`proxy_pass` with a trailing slash).
