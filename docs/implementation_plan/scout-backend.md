@@ -48,7 +48,7 @@ frontend.
    - Each agent runs tests with its own `TEST_DB_SUFFIX` (Postgres) and
      `TEST_MONGO_DB`.
 7. **Real calls happen only in the phase demos,** run by the integrator, and need
-   `CRUSTDATA_API_KEY` and `ANTHROPIC_API_KEY` in `backend/.env`. **Neither is set
+   `CRUSTDATA_API_KEY` and `OPENROUTER_API_KEY` in `backend/.env`. **Neither is set
    yet.**
 8. **Conventions:**
    - AGENTS.md rules apply.
@@ -65,7 +65,7 @@ frontend.
 | Background work | `job` table, plus a worker process (`python -m app.worker`) that claims jobs with `FOR UPDATE SKIP LOCKED`. Steps are saved in `run_step`. | Resumes after a crash; no Redis or Celery needed |
 | Progress | SSE at `GET /runs/{id}/events`, polling `run_step` every second | Simple, works through the nginx and Vite proxies |
 | HTTP | `httpx` for Crustdata, web, Gmail | One client library |
-| LLM | Anthropic SDK. `claude-sonnet-5-5` for extraction, parsing and the memo; `claude-haiku-5-5` for attachment classification. Structured output via tool use. | Strong at extracting with exact quotes. Read the `claude-api` skill before writing `integrations/llm.py`. |
+| LLM | **OpenRouter** (OpenAI-compatible chat API over `httpx`), Claude Sonnet 5.5 via BYOK; slugs in `LLM_MODEL` / `LLM_FAST_MODEL`. Structured output via one validated `submit` tool call. *(Changed from the Anthropic SDK during phase 0.)* | The team's Anthropic key is billed through OpenRouter |
 | PDF parsing | `pypdf` (text per page) | Small, pure Python |
 | Token encryption | `cryptography` (Fernet) | Gmail refresh tokens |
 | Auth | **Shortcut:** no login. Requests carry an `X-Investor-Id` header after onboarding. | A single-tenant demo. Upgrade to real sessions after the hackathon. |
@@ -233,6 +233,6 @@ Never cut source tracking, the quote check, approval before sending, or the ledg
 ## Prerequisites (the user)
 
 - [ ] `CRUSTDATA_API_KEY` in `backend/.env` (redeem promo `CONTEXTCONBITS`)
-- [ ] `ANTHROPIC_API_KEY` in `backend/.env`
+- [ ] `OPENROUTER_API_KEY` in `backend/.env` (Anthropic key attached in OpenRouter as BYOK)
 - [ ] Google Cloud OAuth client + test users, if Gmail is wanted (needed by 15:30)
 - [ ] A real partner name and firm for the phase 1 live demo
