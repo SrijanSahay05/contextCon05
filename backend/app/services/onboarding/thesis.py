@@ -31,6 +31,7 @@ class DealInput:
     age_years: float | None = None
     headcount: int | None = None
     championed: bool = False
+    entry: bool = True  # False for a follow-on round in a company the firm already backed
 
 
 @dataclass
@@ -72,6 +73,12 @@ def _sector(deal: DealInput) -> str:
 def _point(dimension: str, statement: str, value: Any, deals: list[DealInput]) -> dict[str, Any]:
     return {"dimension": dimension, "statement": statement, "value": value,
             "deal_ids": [d.id for d in deals]}
+
+
+def _stage_label(round_type: str | None) -> str:
+    if not round_type or round_type in {"unknown", "series_unknown"}:
+        return "undisclosed round"
+    return round_type
 
 
 def _median(values: list[float]) -> float | None:
@@ -120,7 +127,10 @@ def infer_thesis(
     partner_past_sectors: list[str] | None = None,
 ) -> ThesisResult:
     start = months_before(window_end, window_months)
-    deals = [d for d in all_deals if d.round_date and start <= d.round_date <= window_end]
+    in_window = [d for d in all_deals if d.round_date and start <= d.round_date <= window_end]
+    # follow-ons describe old bets, not what the firm invests in now: only entries count
+    deals = [d for d in in_window if d.entry]
+    follow_ons = len(in_window) - len(deals)
     n = len(deals)
     points: list[dict[str, Any]] = []
     if n:
@@ -138,11 +148,12 @@ def infer_thesis(
             deals,
         ))
 
-        stages = Counter(d.round_type or "unknown" for d in deals)
+        stages = Counter(_stage_label(d.round_type) for d in deals)
+        statement = ", ".join(f"{_pct(v / n)} {k}" for k, v in stages.most_common())
+        if follow_ons:
+            statement += f" ({follow_ons} follow-on rounds in existing portfolio not counted)"
         points.append(_point(
-            "stage",
-            ", ".join(f"{_pct(v / n)} {k}" for k, v in stages.most_common()),
-            _shares(stages, n), deals,
+            "stage", statement, _shares(stages, n) | {"follow_on_rounds": follow_ons}, deals,
         ))
 
         priced = [d for d in deals if d.amount_usd is not None]

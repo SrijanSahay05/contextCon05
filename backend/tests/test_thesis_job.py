@@ -76,9 +76,13 @@ def test_job_builds_deals_thesis_and_profile(
 
     thesis = db.scalars(select(Thesis)).one()
     assert thesis.status == ReviewStatus.draft and thesis.version == 1
-    assert thesis.deal_count == 2 and thesis.confidence == "low"
+    # two Accel rounds in one company: the seed is the investment, the series A a follow-on
+    assert thesis.deal_count == 1 and thesis.confidence == "low"
     assert str(thesis.window_start) == "2018-12-01"  # widened to 36 months
-    assert {str(d.id) for d in deals} <= {i for p in thesis.points for i in p["deal_ids"]}
+    entries = {str(d.id) for d in deals if d.match_evidence["entry"]}
+    assert entries == {i for p in thesis.points for i in p["deal_ids"]}
+    [stage] = [p for p in thesis.points if p["dimension"] == "stage"]
+    assert stage["value"]["follow_on_rounds"] == 1
     assert thesis.summary
 
     profile = db.scalars(select(ScoringProfile)).one()

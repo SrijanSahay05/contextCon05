@@ -72,6 +72,9 @@ def deals_from_company(
         (m, name) for m in funding.get("milestones") or []
         if (name := round_names_firm(m.get("investors"), canonical_names)) is not None
     ]
+    # the firm's first round in this company is its investment; later rounds are follow-ons
+    dated = [d for m, _ in named if (d := _round_date(m)) is not None]
+    entry_date = min(dated) if dated else None
     drafts: list[DealDraft] = []
     for milestone, matched in named:
         round_date = _round_date(milestone)
@@ -83,6 +86,7 @@ def deals_from_company(
         }
         evidence: dict[str, Any] = {
             "round_investors": milestone.get("investors"), "matched_name": matched,
+            "entry": round_date == entry_date,
         }
         if len(same_name) > 1:
             evidence["permalinks"] = sorted(same_name)

@@ -106,6 +106,7 @@ def onboarding_thesis(db: Session, runner: StepRunner, payload: dict[str, Any]) 
                         amount_usd=draft.amount_usd, led=draft.led, sectors=profile.sectors,
                         country=profile.country, city=profile.city,
                         age_years=profile.age_years, headcount=profile.headcount,
+                        entry=bool(draft.match_evidence.get("entry", True)),
                     )) | {"round_date": draft.round_date.isoformat(), "name": company.name})
         db.commit()
         return {"deals": deals, "flagged": flagged}
