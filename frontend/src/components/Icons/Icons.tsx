@@ -27,6 +27,13 @@ export const ArrowUp = ({ size = 18 }: IconProps) => (
   </Icon>
 )
 
+/** Filled square, used on the composer's button while a search runs. */
+export const Stop = ({ size = 12 }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden="true">
+    <rect width="12" height="12" rx="2.5" fill="currentColor" />
+  </svg>
+)
+
 export const ChevronLeft = ({ size = 16 }: IconProps) => (
   <Icon size={size} strokeWidth={2}>
     <path d="M15 5l-7 7 7 7" />

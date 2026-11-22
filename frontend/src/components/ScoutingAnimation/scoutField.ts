@@ -2,10 +2,10 @@
 // Near the ball, gravity takes over: close ones curve in and are swallowed,
 // like a black hole. Time is in seconds, distances in CSS pixels.
 
-const COUNT = 80
+const COUNT = 90
 const PARTICLE = '161, 161, 166' // grey, as an rgb triple for per-particle alpha
 const BALL = '#3a3a3c' // darker grey
-const GRAVITY = 2_000_000 // pull strength (px³/s²)
+const GRAVITY = 6_000_000 // pull strength (px³/s²)
 const REACH = 7 // gravity only acts within REACH × ball radius
 
 interface Particle {

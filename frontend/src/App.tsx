@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { Backdrop } from './components/Backdrop/Backdrop'
 import { Composer } from './components/Composer/Composer'
 import { Cursor } from './components/Cursor/Cursor'
 import { Sidebar } from './components/Sidebar/Sidebar'
@@ -33,12 +32,17 @@ function App() {
     }, SEARCH_DELAY_MS)
   }
 
+  // Cancel the running search and hand the list back.
+  const stop = () => {
+    window.clearTimeout(timer.current)
+    setStatus((s) => (s?.state === 'busy' ? { state: 'stopped', thesis: s.thesis } : s))
+  }
+
   const busy = status?.state === 'busy'
   const selected = quickLook ? store.byId(quickLook.id) : undefined
 
   return (
     <div className="app">
-      <Backdrop />
       <Cursor />
       <Sidebar active={route.page === 'folder' ? route.folder : null} counts={store.counts} />
 
@@ -49,7 +53,9 @@ function App() {
             items={store.inFolder(route.folder)}
             runId={runId}
             busy={busy && route.folder === 'discover'}
-            intro={route.folder === 'discover' ? <Composer status={status} onSubmit={search} /> : undefined}
+            intro={
+              route.folder === 'discover' ? <Composer status={status} onSubmit={search} onStop={stop} /> : undefined
+            }
             onMove={store.move}
             onSchedule={store.schedule}
             onOpen={(id, origin) => setQuickLook({ id, origin })}

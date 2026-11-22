@@ -75,4 +75,4 @@ export interface Item extends Startup {
 }
 
 /** The state of the latest thesis search, shown under the composer. */
-export type SearchStatus = { state: 'busy' | 'done'; thesis: string }
+export type SearchStatus = { state: 'busy' | 'done' | 'stopped'; thesis: string }

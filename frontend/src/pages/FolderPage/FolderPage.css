@@ -35,6 +35,14 @@
   background: var(--surface);
   box-shadow: var(--shadow-md);
   overflow: hidden;
+  transition:
+    background-color 300ms ease,
+    box-shadow 300ms ease;
+}
+/* While scouting, the animation floats on the page with no card behind it. */
+.folder-page__sheet.is-scouting {
+  background: transparent;
+  box-shadow: none;
 }
 
 .folder-page__empty {

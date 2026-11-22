@@ -1,12 +1,14 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { SearchStatus } from '../../types/startup'
-import { ArrowUp, Link } from '../Icons/Icons'
+import { ArrowUp, Link, Stop } from '../Icons/Icons'
 import './Composer.css'
 
 interface Props {
   /** The latest search, shown under the field. */
   status: SearchStatus | null
   onSubmit: (text: string) => void
+  /** Cancels the running search. */
+  onStop: () => void
 }
 
 const PLACEHOLDER =
@@ -18,7 +20,13 @@ const CHIP_MAX = 90
 
 const clip = (text: string) => (text.length > CHIP_MAX ? `${text.slice(0, CHIP_MAX)}…` : text)
 
-export function Composer({ status, onSubmit }: Props) {
+const STATUS_LABEL: Record<SearchStatus['state'], string> = {
+  busy: 'Scouting for',
+  done: 'Matched to',
+  stopped: 'Stopped scouting for',
+}
+
+export function Composer({ status, onSubmit, onStop }: Props) {
   const busy = status?.state === 'busy'
   const [value, setValue] = useState('')
   const field = useRef<HTMLTextAreaElement>(null)
@@ -31,11 +39,16 @@ export function Composer({ status, onSubmit }: Props) {
     t.style.height = `${Math.min(t.scrollHeight, MAX_HEIGHT)}px`
   }, [value])
 
+  // The thesis stays in the field so it can be refined and re-run.
   const submit = () => {
     const text = value.trim()
     if (!text || busy) return
     onSubmit(text)
-    setValue('')
+  }
+
+  const stop = () => {
+    onStop()
+    field.current?.focus()
   }
 
   const isLinkedIn = LINKEDIN.test(value)
@@ -46,7 +59,8 @@ export function Composer({ status, onSubmit }: Props) {
         className={`composer${busy ? ' is-busy' : ''}`}
         onSubmit={(e) => {
           e.preventDefault()
-          submit()
+          if (busy) stop()
+          else submit()
         }}
       >
         <textarea
@@ -54,11 +68,15 @@ export function Composer({ status, onSubmit }: Props) {
           className="composer__field"
           rows={1}
           value={value}
+          readOnly={busy}
           placeholder={PLACEHOLDER}
           aria-label="Your investment thesis"
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Escape' && busy) {
+              e.preventDefault()
+              stop()
+            } else if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault()
               submit()
             }
@@ -71,19 +89,20 @@ export function Composer({ status, onSubmit }: Props) {
               ? 'LinkedIn profile detected — we’ll fetch your track record'
               : 'Thesis memos, past deals, LinkedIn'}
           </span>
-          <button type="submit" className="composer__send" aria-label="Find startups" disabled={!value.trim() || busy}>
-            <ArrowUp />
-          </button>
+          {busy ? (
+            <button type="submit" className="composer__send is-stop" aria-label="Stop search" title="Stop (Esc)">
+              <Stop />
+            </button>
+          ) : (
+            <button type="submit" className="composer__send" aria-label="Find startups" disabled={!value.trim()}>
+              <ArrowUp />
+            </button>
+          )}
         </div>
       </form>
-      {status?.state === 'busy' && (
+      {status && (
         <p className="composer__status">
-          Scouting for <strong>“{clip(status.thesis)}”</strong>
-        </p>
-      )}
-      {status?.state === 'done' && (
-        <p className="composer__status">
-          Matched to <strong>“{clip(status.thesis)}”</strong>
+          {STATUS_LABEL[status.state]} <strong>“{clip(status.thesis)}”</strong>
         </p>
       )}
     </>

@@ -47,7 +47,11 @@ export function FolderPage({ folder, items, runId, busy, intro, onMove, onSchedu
         {intro}
       </header>
 
-      <section className="folder-page__sheet" aria-label={meta.label} aria-busy={busy}>
+      <section
+        className={`folder-page__sheet${phase === 'scouting' ? ' is-scouting' : ''}`}
+        aria-label={meta.label}
+        aria-busy={busy}
+      >
         {phase === 'scouting' ? (
           <ScoutingAnimation leaving={!busy} onExited={onExited} />
         ) : (

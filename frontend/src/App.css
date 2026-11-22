@@ -5,15 +5,6 @@
   min-height: 100vh;
 }
 
-/* Sit above the fixed background lines (the sidebar is already sticky-positioned). */
-.app > .sidebar {
-  z-index: 1;
-}
-.app__main {
-  position: relative;
-  z-index: 1;
-}
-
 .app__main {
   width: 100%;
   max-width: calc(var(--content-w) + 96px);

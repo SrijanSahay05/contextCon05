@@ -27,7 +27,8 @@ export function useScoutingPhase(busy: boolean, list: RefObject<HTMLElement | nu
       ease: 'in(2)',
       onComplete: () => setPhase('scouting'),
     })
-    return () => void exit.pause()
+    // Stopped mid-exit: drop the half-run animation so the cards show again.
+    return () => void exit.revert()
   }, [busy, phase, list])
 
   const onExited = useCallback(() => setPhase('list'), [])

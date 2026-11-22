@@ -39,3 +39,19 @@ test('opening a startup shows its details in a dialog', () => {
   }
   expect(within(dialog).getByRole('button', { name: /open page/i })).toBeTruthy()
 })
+
+test('a search keeps the thesis, locks the field, and can be stopped', () => {
+  render(<App />)
+  const field = screen.getByLabelText(/your investment thesis/i) as HTMLTextAreaElement
+  fireEvent.change(field, { target: { value: 'Seed fintech in India' } })
+  fireEvent.click(screen.getByRole('button', { name: /find startups/i }))
+
+  expect(field.value).toBe('Seed fintech in India')
+  expect(field.readOnly).toBe(true)
+
+  fireEvent.click(screen.getByRole('button', { name: /stop search/i }))
+  expect(field.readOnly).toBe(false)
+  expect(field.value).toBe('Seed fintech in India')
+  expect(screen.getByText(/stopped scouting for/i)).toBeTruthy()
+  expect(screen.getByRole('button', { name: /find startups/i })).toBeTruthy()
+})
