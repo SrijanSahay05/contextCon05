@@ -13,7 +13,16 @@ from app.core.config import get_settings
 from app.db.mongo import mongo_db
 from app.errors import ApiError, ErrorCode
 from app.models.dd import Document
-from app.models.enums import CandidateStatus, DDItemKind, DDStage, DocumentOrigin, RunKind
+from app.models.enums import (
+    CandidateStatus,
+    DDItemKind,
+    DDStage,
+    DocumentOrigin,
+    ReliabilityTier,
+    RunKind,
+    SourceKind,
+)
+from app.models.evidence import Source
 from app.models.search import Candidate
 from app.repositories import documents as repo
 from app.schemas.document import DocumentOut
@@ -58,8 +67,13 @@ def upload(db: Session, candidate: Candidate, file: UploadFile, kind: DDItemKind
     path = Path(settings.upload_dir) / str(candidate.id) / f"{sha256}.{EXTENSIONS[mime]}"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
+    # the uploaded file is the source every claim from it cites (tier C: self-reported)
+    source = Source(kind=SourceKind.upload, endpoint_or_url=file.filename or path.name,
+                    request_hash=sha256, reliability_tier=ReliabilityTier.c)
+    db.add(source)
+    db.flush()
     doc = Document(candidate_id=candidate.id, kind=kind, origin=DocumentOrigin.vc_upload,
-                   storage_path=str(path), mime=mime, sha256=sha256)
+                   storage_path=str(path), mime=mime, sha256=sha256, source_id=source.id)
     db.add(doc)
     try:
         db.flush()

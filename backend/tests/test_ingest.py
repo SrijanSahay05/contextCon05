@@ -203,3 +203,17 @@ def test_csv_is_one_page_and_xlsx_is_not_supported(
     db.refresh(doc)
     assert doc.parse_status == ParseStatus.failed
     assert len(jobs(db, "verify_claims")) == 1
+
+
+def test_upload_creates_the_source_its_claims_cite(
+    client: TestClient, db: Session, uploads: Path
+) -> None:
+    from uuid import UUID
+
+    from app.models.evidence import Source
+
+    investor_id, candidate = seed(db)
+    response = post(client, investor_id, candidate, make_pdf(["TEST FILE: team-made deck"]))
+    doc = db.get_one(Document, UUID(response.json()["id"]))
+    source = db.get_one(Source, doc.source_id)
+    assert source.kind == "upload" and source.reliability_tier == "C"
