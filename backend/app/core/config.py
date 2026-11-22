@@ -18,9 +18,11 @@ class Settings(BaseSettings):
     # external data; keys are only needed for live calls, tests use fakes
     crustdata_api_key: str = ""
     crustdata_base_url: str = "https://api.crustdata.com"
-    anthropic_api_key: str = ""
-    llm_model: str = "claude-sonnet-5-5"
-    llm_fast_model: str = "claude-haiku-5-5"
+    # LLM via OpenRouter (Anthropic key attached there as BYOK); slugs from openrouter.ai/models
+    openrouter_api_key: str = ""
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    llm_model: str = "anthropic/claude-sonnet-5.5"
+    llm_fast_model: str = "anthropic/claude-haiku-5.5"
     cache_max_age_hours: int = 24
 
     # per-run limits

@@ -1,14 +1,18 @@
-"""LLM client: structured extraction into Pydantic models, prose, and quote checks."""
+"""LLM client: structured extraction into Pydantic models, prose, and quote checks.
 
+Talks to OpenRouter's OpenAI-compatible chat API (Claude Sonnet 5.5 via BYOK) over httpx.
+"""
+
+import json
 import re
+import time
 import unicodedata
 from collections import deque
-from types import SimpleNamespace
+from collections.abc import Callable
 from typing import Any
 from uuid import UUID
 
-import anthropic
-from anthropic.types import Message
+import httpx
 from pydantic import BaseModel, ValidationError
 
 from app.integrations import IntegrationSettings
@@ -18,6 +22,9 @@ from app.models.enums import Provider, SourceKind, UnitType
 
 MAX_TOKENS = 16000
 TOOL_NAME = "submit"
+ENDPOINT = "/chat/completions"
+BACKOFF = (1.0, 2.0, 4.0)
+TIMEOUT_SECONDS = 120.0
 
 
 _QUOTES = str.maketrans({
@@ -40,103 +47,150 @@ def quote_check(haystack: str, quote: str) -> bool:
 
 
 class LLMClient:
-    """Claude via the Anthropic SDK; every call is recorded with its token counts."""
+    """Chat completions via OpenRouter; every call is recorded with its token counts."""
 
     def __init__(
         self,
         settings: IntegrationSettings,
         recorder: Recorder,
-        client: Any = None,
+        transport: httpx.BaseTransport | None = None,
         run_id: UUID | None = None,
+        *,
+        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
-        self.settings, self.recorder, self.run_id = settings, recorder, run_id
-        # Any: the SDK's overloaded `messages.create` can't be matched by a Protocol,
-        # and tests pass `FakeLLM`.
-        self.client: Any = client or anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        self.settings, self.recorder, self.run_id, self.sleep = settings, recorder, run_id, sleep
+        self.http = httpx.Client(
+            base_url=settings.openrouter_base_url,
+            headers={
+                "authorization": f"Bearer {settings.openrouter_api_key or ''}",
+                "x-title": "Scout",
+            },
+            timeout=TIMEOUT_SECONDS,
+            transport=transport,
+        )
 
     def extract[T: BaseModel](
         self, schema: type[T], system: str, prompt: str, model: str | None = None
     ) -> T:
-        """Get one `submit` tool call whose input validates as `schema`; retry once on error."""
+        """Get one `submit` tool call whose arguments validate as `schema`; retry once."""
         tool = {
-            "name": TOOL_NAME,
-            "description": f"Submit the {schema.__name__} result.",
-            "input_schema": schema.model_json_schema(),
+            "type": "function",
+            "function": {
+                "name": TOOL_NAME,
+                "description": f"Submit the {schema.__name__} result.",
+                "parameters": schema.model_json_schema(),
+            },
         }
-        # Forced tool_choice (any/tool) is a 400 on Sonnet 5.5 / Opus 5.5, so the call is
-        # steered by the prompt with auto + one call at most, then validated here.
+        # forcing a named tool is rejected for some Claude models, so steer with the prompt
+        # and validate; a missing or invalid call gets one retry with the reason
         system = f"{system}\n\nAnswer only by calling the `{TOOL_NAME}` tool exactly once."
         error = ""
         for _ in range(2):
             content = prompt + (f"\n\nYour previous answer was invalid: {error}" if error else "")
-            message = self._create(
+            message, finish = self._create(
                 model, system, content,
-                tools=[tool], tool_choice={"type": "auto", "disable_parallel_tool_use": True},
+                tools=[tool], tool_choice="auto", parallel_tool_calls=False,
             )
-            block = next((b for b in message.content if b.type == "tool_use"), None)
-            if block is None:
-                error = f"no `{TOOL_NAME}` tool call (stop_reason={message.stop_reason})"
+            calls = [c for c in message.get("tool_calls") or [] if
+                     c.get("function", {}).get("name") == TOOL_NAME]
+            if not calls:
+                error = f"no `{TOOL_NAME}` tool call (finish_reason={finish})"
                 continue
             try:
-                return schema.model_validate(block.input)
+                return schema.model_validate_json(calls[0]["function"]["arguments"])
             except ValidationError as exc:
                 error = str(exc)
         raise LLMError(f"extract {schema.__name__} failed: {error}")
 
     def write(self, system: str, prompt: str, model: str | None = None) -> str:
         """Free text (memo, outreach)."""
-        message = self._create(model, system, prompt)
-        if message.stop_reason == "refusal":
+        message, finish = self._create(model, system, prompt)
+        if finish == "content_filter":
             raise LLMError("model refused")
-        return "".join(b.text for b in message.content if b.type == "text")
+        return str(message.get("content") or "")
 
-    def _create(self, model: str | None, system: str, prompt: str, **extra: Any) -> Message:
-        model = model or self.settings.llm_model
-        request = {"model": model, "system": system, "prompt": prompt}
-        message: Message = self.client.messages.create(
-            model=model, max_tokens=MAX_TOKENS, system=system,
-            messages=[{"role": "user", "content": prompt}], **extra,
-        )
-        response = message.model_dump(mode="json", include={"content", "stop_reason", "usage"})
-        # The ledger has one unit type per row, so tokens in and out are two rows.
+    def _create(
+        self, model: str | None, system: str, prompt: str, **extra: Any
+    ) -> tuple[dict[str, Any], str | None]:
+        body = {
+            "model": model or self.settings.llm_model,
+            "max_tokens": MAX_TOKENS,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": prompt},
+            ],
+            **extra,
+        }
+        data = self._post(body)
+        choice = (data.get("choices") or [{}])[0]
+        usage = data.get("usage") or {}
+        response = {"choice": choice, "usage": usage, "model": data.get("model")}
+        # the ledger has one unit type per row, so tokens in and out are two rows
         for units, unit_type in (
-            (message.usage.input_tokens, UnitType.input_tokens),
-            (message.usage.output_tokens, UnitType.output_tokens),
+            (usage.get("prompt_tokens", 0), UnitType.input_tokens),
+            (usage.get("completion_tokens", 0), UnitType.output_tokens),
         ):
             self.recorder.record(
-                provider=Provider.llm, endpoint="/v1/messages", request=request,
+                provider=Provider.llm, endpoint=ENDPOINT, request=body,
                 response=response, units=float(units), unit_type=unit_type, cached=False,
                 run_id=self.run_id, kind=SourceKind.llm,
             )
-        return message
+        return choice.get("message") or {}, choice.get("finish_reason")
+
+    def _post(self, body: dict[str, Any]) -> dict[str, Any]:
+        failure = ""
+        for attempt in range(len(BACKOFF) + 1):
+            try:
+                response = self.http.post(ENDPOINT, json=body)
+            except httpx.TransportError as exc:
+                failure = repr(exc)
+            else:
+                if response.status_code < 400:
+                    data: dict[str, Any] = response.json()
+                    if "error" in data:  # OpenRouter can report upstream errors with a 200
+                        raise LLMError(f"OpenRouter error: {data['error']}")
+                    return data
+                if response.status_code != 429 and response.status_code < 500:
+                    raise LLMError(f"OpenRouter HTTP {response.status_code}: {response.text}")
+                failure = f"HTTP {response.status_code}"
+            if attempt < len(BACKOFF):
+                self.sleep(BACKOFF[attempt])
+        raise LLMError(f"OpenRouter unavailable: {failure}")
 
 
-class FakeLLM:
-    """Stand-in for `anthropic.Anthropic`: pops one queued reply per `messages.create`.
+class FakeLLM(httpx.MockTransport):
+    """Transport for tests: pops one queued reply per request.
 
-    A dict becomes a `submit` tool call with that input; a str becomes a text reply.
-    Requests are kept in `requests`.
+    A dict becomes a `submit` tool call with those arguments; a str becomes a text reply.
+    Request bodies are kept in `requests`.
     """
 
     def __init__(self, *replies: dict[str, Any] | str) -> None:
         self.replies: deque[dict[str, Any] | str] = deque(replies)
         self.requests: list[dict[str, Any]] = []
-        self.messages = SimpleNamespace(create=self._create)
+        super().__init__(self._handle)
 
     def queue(self, *replies: dict[str, Any] | str) -> None:
         self.replies.extend(replies)
 
-    def _create(self, **kwargs: Any) -> Message:
-        self.requests.append(kwargs)
+    def _handle(self, request: httpx.Request) -> httpx.Response:
+        self.requests.append(json.loads(request.content))
         reply = self.replies.popleft()
-        if isinstance(reply, str):
-            block: dict[str, Any] = {"type": "text", "text": reply}
-            stop = "end_turn"
+        if isinstance(reply, dict):
+            message: dict[str, Any] = {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [{
+                    "id": f"call_{len(self.requests)}",
+                    "type": "function",
+                    "function": {"name": TOOL_NAME, "arguments": json.dumps(reply)},
+                }],
+            }
+            finish = "tool_calls"
         else:
-            block = {"type": "tool_use", "id": "toolu_fake", "name": TOOL_NAME, "input": reply}
-            stop = "tool_use"
-        return Message.model_validate({
-            "id": "msg_fake", "type": "message", "role": "assistant", "model": kwargs["model"],
-            "content": [block], "stop_reason": stop, "stop_sequence": None,
-            "usage": {"input_tokens": 100, "output_tokens": 20},
+            message, finish = {"role": "assistant", "content": reply}, "stop"
+        return httpx.Response(200, json={
+            "model": self.requests[-1]["model"],
+            "choices": [{"index": 0, "message": message, "finish_reason": finish}],
+            "usage": {"prompt_tokens": 120, "completion_tokens": 40},
         })

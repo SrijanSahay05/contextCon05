@@ -29,9 +29,10 @@ def fixture(name: str) -> dict[str, Any]:
 class FakeSettings:
     crustdata_api_key: str | None = "test-key"
     crustdata_base_url: str = "https://crust.test"
-    anthropic_api_key: str | None = None
-    llm_model: str = "claude-sonnet-5-5"
-    llm_fast_model: str = "claude-haiku-5-5"
+    openrouter_api_key: str | None = "or-test-key"
+    openrouter_base_url: str = "https://openrouter.test/api/v1"
+    llm_model: str = "anthropic/claude-sonnet-5.5"
+    llm_fast_model: str = "anthropic/claude-haiku-5.5"
     cache_max_age_hours: float = 24
 
 

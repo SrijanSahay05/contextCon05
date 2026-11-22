@@ -1,4 +1,4 @@
-"""Clients for external sources: Crustdata, Crustdata web search/fetch, and the LLM."""
+"""Clients for external sources: Crustdata, Crustdata web search/fetch, and the LLM (OpenRouter)."""
 
 from typing import Protocol
 
@@ -13,7 +13,10 @@ class IntegrationSettings(Protocol):
     def crustdata_base_url(self) -> str: ...
 
     @property
-    def anthropic_api_key(self) -> str | None: ...
+    def openrouter_api_key(self) -> str | None: ...
+
+    @property
+    def openrouter_base_url(self) -> str: ...
 
     @property
     def llm_model(self) -> str: ...

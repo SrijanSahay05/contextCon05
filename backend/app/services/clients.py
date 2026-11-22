@@ -1,11 +1,10 @@
 """One place that builds the external clients for a run, wired to the DB recorder.
 
-Tests swap in fakes by passing `transport` / `llm_client`; production passes nothing.
+Tests swap in fakes by passing `transport` / `llm_transport`; production passes nothing.
 """
 
 import uuid
 from dataclasses import dataclass
-from typing import Any
 
 import httpx
 
@@ -29,12 +28,12 @@ def clients_for_run(
     run_id: uuid.UUID | None,
     *,
     transport: httpx.BaseTransport | None = None,
-    llm_client: Any = None,
+    llm_transport: httpx.BaseTransport | None = None,
 ) -> Clients:
     settings = get_settings()
     recorder = DbRecorder(SessionLocal, mongo_db)
     return Clients(
         crustdata=CrustdataClient(settings, recorder, transport, run_id),
         web=WebClient(settings, recorder, transport, run_id),
-        llm=LLMClient(settings, recorder, llm_client, run_id),
+        llm=LLMClient(settings, recorder, llm_transport, run_id),
     )
