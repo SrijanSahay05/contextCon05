@@ -44,7 +44,12 @@ class FakeWorld:
             founders = "company_id" in json.dumps(body["filters"])
             data = w["founders"] if founders else w["people_route"]
         elif path == "/company/search":
-            data = w["company_route"]
+            data = json.loads(json.dumps(w["company_route"]))
+            within = [c["value"] for c in (body.get("filters") or {}).get("conditions") or []
+                      if c.get("field") == "crustdata_company_id"]
+            if within:  # like the API: only companies inside the id restriction
+                data["companies"] = [c for c in data["companies"]
+                                     if c.get("crustdata_company_id") in within[0]]
         elif path == "/company/enrich":
             data = [{"matched_on": str(i), "matches": (
                 [{"company_data": w["companies"][str(i)]}] if str(i) in w["companies"] else [])}
@@ -111,34 +116,35 @@ def test_company_route_uses_semantic_mode_and_industry_filter() -> None:
     ]
 
 
-def test_both_routes_intersect_when_they_overlap() -> None:
-    out = discover(FakeWorld(), people=[SCHOOL], companies=[INDUSTRY])
-    assert out["mode"] == "intersection"
+def test_company_search_runs_within_the_founders_companies() -> None:
+    fake = FakeWorld()
+    out = discover(fake, people=[SCHOOL], companies=[INDUSTRY])
+    assert out["mode"] == "people_then_company"
     assert out["candidates"] == [
         {"crustdata_company_id": 700101, "found_by": ["people", "company"]}]
+    [body] = fake.paths("/company/search")
+    [within] = [c for c in body["filters"]["conditions"]
+                if c["field"] == "crustdata_company_id"]
+    assert within == {"field": "crustdata_company_id", "type": "in", "value": [700101, 700102]}
 
 
-def test_both_routes_fall_back_to_flagged_union() -> None:
+def test_no_overlap_means_no_candidates_not_a_union() -> None:
     fake = FakeWorld()
     fake.world["company_route"]["companies"] = [
         {"crustdata_company_id": 700103, "basic_info": {"name": "GridDeep"}}]
     out = discover(fake, people=[SCHOOL], companies=[INDUSTRY])
-    assert out["mode"] == "union"
-    assert out["candidates"] == [
-        {"crustdata_company_id": 700101, "found_by": ["people"]},
-        {"crustdata_company_id": 700102, "found_by": ["people"]},
-        {"crustdata_company_id": 700103, "found_by": ["company"]},
-    ]
+    assert out["mode"] == "people_then_company"
+    assert out["candidates"] == []
 
 
-def test_dedupe_and_cap() -> None:
+def test_dedupe_cap_and_invalid_ids() -> None:
     fake = FakeWorld()
     fake.world["company_route"]["companies"] = [
-        {"crustdata_company_id": i % 40} for i in range(80)]
+        {"crustdata_company_id": i % 40} for i in range(80)]  # includes id 0, seen live
     out = discover(fake, companies=[INDUSTRY])
     ids = [c["crustdata_company_id"] for c in out["candidates"]]
-    assert ids == list(range(discovery.MAX_CANDIDATES))
-    assert out["route_counts"] == {"company": 40}
+    assert ids == list(range(1, discovery.MAX_CANDIDATES + 1))
+    assert out["route_counts"] == {"company": 39}
 
 
 def enrich(db: Session, fake: FakeWorld) -> dict[str, Any]:

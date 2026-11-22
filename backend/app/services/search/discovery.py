@@ -25,6 +25,7 @@ from app.services.evidence.facts_mapper import (
     persist_facts,
 )
 
+WITHIN_LIMIT = 500  # employer ids passed to the company search
 MAX_CANDIDATES = 30
 SEARCH_LIMIT = 100
 ENRICH_BATCH = 25
@@ -102,13 +103,18 @@ def people_request(spec: FilterSpec) -> dict[str, Any]:
     }
 
 
-def company_request(spec: FilterSpec, as_of: date) -> dict[str, Any]:
+def company_request(
+    spec: FilterSpec, as_of: date, within: list[int] | None = None
+) -> dict[str, Any]:
+    """`within` restricts the company search to these ids (the people route's employers)."""
     semantic = [str(c.value) for c in spec.companies if c.op == "semantic"]
     conditions = [_condition(c, COMPANY_FIELDS)
                   for c in spec.companies + spec.funding if c.op != "semantic"]
     if spec.window_months and spec.funding:
         conditions.append({"field": "funding.last_fundraise_date", "type": "=>",
                            "value": months_before(as_of, spec.window_months).isoformat()})
+    if within is not None:
+        conditions.append({"field": "crustdata_company_id", "type": "in", "value": within})
     body: dict[str, Any] = {"fields": ["basic_info"], "limit": SEARCH_LIMIT}
     if conditions:
         body["filters"] = _and(conditions)
@@ -119,41 +125,52 @@ def company_request(spec: FilterSpec, as_of: date) -> dict[str, Any]:
 
 def _current_employers(profile: dict[str, Any]) -> list[int]:
     jobs = ((profile.get("experience") or {}).get("employment_details") or {}).get("current")
+    # 0 / missing ids show up live for founders without a resolved employer
     return [int(j["crustdata_company_id"]) for j in jobs or []
-            if isinstance(j, dict) and j.get("crustdata_company_id") is not None]
+            if isinstance(j, dict) and (j.get("crustdata_company_id") or 0) > 0]
 
 
 def discover(clients: Clients, spec: FilterSpec, as_of: date, budget: Budget) -> dict[str, Any]:
-    """Run the routes the spec calls for; return candidates in rank order with `found_by`."""
-    routes: dict[str, list[int]] = {}
+    """Candidates in rank order with `found_by`.
+
+    With people and company terms, the company search (incl. the semantic ranking) runs
+    *within* the people route's employers, so every candidate satisfies both. Live, the
+    two routes run separately had no overlap, and a union fallback returned companies
+    that matched only half the request.
+    """
+    route_counts: dict[str, int] = {}
+    people_ids: list[int] | None = None
     if spec.people:
         budget()
         found = clients.crustdata.person_search(people_request(spec))
-        routes["people"] = [cid for p in (found.data or {}).get("profiles") or []
-                            for cid in _current_employers(p)]
-    if spec.companies or spec.funding:
-        budget()
-        found = clients.crustdata.company_search(company_request(spec, as_of))
-        routes["company"] = [int(c["crustdata_company_id"])
-                             for c in (found.data or {}).get("companies") or []]
+        people_ids = list(dict.fromkeys(
+            cid for p in (found.data or {}).get("profiles") or [] for cid in _current_employers(p)
+        ))
+        route_counts["people"] = len(people_ids)
 
-    found_by: dict[int, list[str]] = {}
-    for route, ids in routes.items():
-        for cid in ids:
-            if route not in found_by.setdefault(cid, []):
-                found_by[cid].append(route)
-    mode = "union"
-    if len(routes) == 2:
-        both = [cid for cid, by in found_by.items() if len(by) == 2]
-        if both:
-            mode, found_by = "intersection", {cid: found_by[cid] for cid in both}
-    elif routes:
-        mode = next(iter(routes))
+    has_company_terms = bool(spec.companies or spec.funding)
+    if people_ids is not None and not has_company_terms:
+        mode, ranked = "people", people_ids
+    elif people_ids is not None and not people_ids:
+        mode, ranked = "people_then_company", []
+    elif has_company_terms:
+        budget()
+        within = people_ids[:WITHIN_LIMIT] if people_ids is not None else None
+        found = clients.crustdata.company_search(company_request(spec, as_of, within))
+        ranked = [int(c["crustdata_company_id"])
+                  for c in (found.data or {}).get("companies") or []
+                  if int(c.get("crustdata_company_id") or 0) > 0]
+        route_counts["company"] = len(set(ranked))
+        mode = "company" if people_ids is None else "people_then_company"
+    else:
+        mode, ranked = "none", []
+
+    found_by = ["people", "company"] if mode == "people_then_company" else [mode]
     return {
         "mode": mode,
-        "route_counts": {route: len(set(ids)) for route, ids in routes.items()},
-        "candidates": [{"crustdata_company_id": cid, "found_by": by}
-                       for cid, by in list(found_by.items())[:MAX_CANDIDATES]],
+        "route_counts": route_counts,
+        "candidates": [{"crustdata_company_id": cid, "found_by": found_by}
+                       for cid in list(dict.fromkeys(ranked))[:MAX_CANDIDATES]],
     }
 
 
