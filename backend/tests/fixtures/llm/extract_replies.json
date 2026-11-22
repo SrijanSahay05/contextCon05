@@ -1,0 +1,13 @@
+{
+  "_note": "hand-written FakeLLM replies; not live data",
+  "replies": [
+    {
+      "company": "Lumen Ledger",
+      "round_usd": "a lot"
+    },
+    {
+      "company": "Lumen Ledger",
+      "round_usd": 120000000
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/company/search",
+  "request": {
+    "filters": {
+      "field": "funding.investors",
+      "type": "(.)",
+      "value": "Accel"
+    },
+    "limit": 2
+  },
+  "headers": {
+    "x-credits-used": "0.06"
+  },
+  "response": {
+    "companies": [
+      {
+        "crustdata_company_id": 700001,
+        "basic_info": {
+          "name": "Lumen Ledger",
+          "primary_domain": "lumenledger.io",
+          "website": "https://lumenledger.io/",
+          "professional_network_url": "https://www.linkedin.com/company/lumenledger",
+          "company_type": "Privately Held",
+          "year_founded": 2019,
+          "employee_count_range": "201-500"
+        },
+        "headcount": {
+          "total": 412,
+          "growth_percent": {
+            "1m": 0.74,
+            "3m": 0.73,
+            "6m": 4.04,
+            "12m": 6.19
+          }
+        },
+        "funding": {
+          "total_investment_usd": 198500000,
+          "last_round_type": "private_equity",
+          "investors": [
+            "Accel",
+            "Accel-KKR"
+          ]
+        }
+      },
+      {
+        "crustdata_company_id": 662397,
+        "basic_info": {
+          "name": "HubSpot",
+          "primary_domain": "hubspot.com",
+          "website": "https://hubspot.com",
+          "company_type": "Public Company",
+          "year_founded": 2006,
+          "employee_count_range": "5001-10000"
+        },
+        "headcount": {
+          "total": 11965
+        },
+        "funding": {
+          "investors": []
+        }
+      }
+    ],
+    "next_cursor": "H4sIAJj5zGkC_xXMMQ7CMAxA0...",
+    "total_count": 264
+  }
+}

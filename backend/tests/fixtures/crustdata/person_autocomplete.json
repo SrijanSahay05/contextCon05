@@ -1,0 +1,25 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/person/search/autocomplete",
+  "request": {
+    "field": "experience.employment_details.current.title",
+    "query": "VP",
+    "limit": 5
+  },
+  "headers": {
+    "x-credits-used": "0"
+  },
+  "response": {
+    "suggestions": [
+      {
+        "value": "VP"
+      },
+      {
+        "value": "VP of Sales"
+      },
+      {
+        "value": "VP Sales"
+      }
+    ]
+  }
+}

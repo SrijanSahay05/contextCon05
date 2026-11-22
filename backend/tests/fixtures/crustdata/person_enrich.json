@@ -1,0 +1,85 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/person/enrich",
+  "request": {
+    "professional_network_profile_urls": [
+      "https://www.linkedin.com/in/ananya-rao-ll"
+    ]
+  },
+  "headers": {
+    "x-credits-used": "1"
+  },
+  "response": [
+    {
+      "matched_on": "https://www.linkedin.com/in/ananya-rao-ll",
+      "match_type": "professional_network_profile_url",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "person_data": {
+            "crustdata_person_id": 880001,
+            "basic_profile": {
+              "name": "Ananya Rao",
+              "headline": "Co-founder & CEO @ Lumen Ledger",
+              "current_title": "Co-founder & CEO",
+              "location": {
+                "city": "Bengaluru",
+                "state": "Karnataka",
+                "country": "India",
+                "continent": "Asia",
+                "raw": "Bengaluru, Karnataka, India"
+              }
+            },
+            "experience": {
+              "employment_details": {
+                "current": [
+                  {
+                    "name": "Lumen Ledger",
+                    "title": "Co-founder & CEO",
+                    "start_date": "2019-01-01T00:00:00+00:00",
+                    "seniority_level": "CXO",
+                    "crustdata_company_id": 700001,
+                    "company_website_domain": "lumenledger.io"
+                  }
+                ],
+                "past": [
+                  {
+                    "name": "Razorpay",
+                    "title": "Product Manager",
+                    "start_date": "2015-07-01T00:00:00+00:00",
+                    "end_date": "2018-12-01T00:00:00+00:00",
+                    "seniority_level": "Senior",
+                    "crustdata_company_id": 640123
+                  }
+                ]
+              }
+            },
+            "education": {
+              "schools": [
+                {
+                  "school": "Birla Institute of Technology and Science, Pilani",
+                  "degree": "Bachelor of Engineering (B.E.)",
+                  "field_of_study": "Computer Science",
+                  "start_date": "2011-08-01",
+                  "end_date": "2015-05-01",
+                  "location": {
+                    "raw": "Pilani, Rajasthan, India",
+                    "city": "Pilani",
+                    "state": "Rajasthan",
+                    "country": "India",
+                    "continent": "Asia"
+                  }
+                }
+              ]
+            },
+            "social_handles": {
+              "professional_network_identifier": {
+                "profile_url": "https://www.linkedin.com/in/ananya-rao-ll"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

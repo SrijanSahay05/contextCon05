@@ -1,0 +1,48 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/company/identify",
+  "request": {
+    "domains": [
+      "lumenledger.io"
+    ]
+  },
+  "headers": {
+    "x-credits-used": "0.2"
+  },
+  "response": [
+    {
+      "matched_on": "lumenledger.io",
+      "match_type": "domain",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 700001,
+            "basic_info": {
+              "crustdata_company_id": 700001,
+              "name": "Lumen Ledger",
+              "primary_domain": "lumenledger.io",
+              "all_domains": [
+                "lumenledger.io"
+              ],
+              "website": "https://lumenledger.io/",
+              "professional_network_url": "https://www.linkedin.com/company/lumenledger",
+              "professional_network_id": "90000001",
+              "profile_name": "Lumen Ledger",
+              "description": "Accounting automation for mid-market finance teams.",
+              "company_type": "Privately Held",
+              "year_founded": 2019,
+              "employee_count_range": "201-500",
+              "markets": [
+                "PRIVATE"
+              ],
+              "industries": [
+                "Software Development"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

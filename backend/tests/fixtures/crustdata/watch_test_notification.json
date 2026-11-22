@@ -1,0 +1,36 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/watch/company/46936/test",
+  "request": {
+    "notification_endpoint": "https://scout.example.com/webhooks/crustdata"
+  },
+  "headers": {},
+  "response": {
+    "delivered": [
+      {
+        "type": "webhook",
+        "url": "https://scout.example.com/webhooks/crustdata",
+        "status_code": 200,
+        "ok": true
+      }
+    ],
+    "envelope": {
+      "watch_id": 46936,
+      "kind": "entity",
+      "dataset": "company",
+      "test": true,
+      "notifications": [
+        {
+          "crustdata_company_id": 700001,
+          "changes": [
+            {
+              "field": "funding.last_fundraise_date",
+              "old": "2023-11-10",
+              "new": "2025-02-18"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

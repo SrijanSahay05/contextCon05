@@ -6,18 +6,22 @@ UV := uv --directory $(BACKEND_DIR)
 COMPOSE := docker compose --env-file $(BACKEND_DIR)/.env
 MESSAGE ?= schema change
 
-.PHONY: install dev front dev-down up test lint typecheck check migration-generate migration-migrate migration-push db-generate db-migrate db-push
+.PHONY: install dev front worker dev-down up test lint typecheck check migration-generate migration-migrate migration-push db-generate db-migrate db-push openapi
 
 install:
 	$(UV) sync
 	cd $(FRONTEND_DIR) && pnpm install
 
-# Backend + Postgres + Mongo in Docker; run the frontend with `make front`.
+# Backend + worker + Postgres + Mongo in Docker; run the frontend with `make front`.
 dev:
-	$(COMPOSE) up --build backend
+	$(COMPOSE) up --build backend worker
 
 front:
 	cd $(FRONTEND_DIR) && pnpm dev
+
+# Background job worker on the host (claims jobs from Postgres).
+worker:
+	$(UV) run python -m app.worker
 
 dev-down:
 	$(COMPOSE) down
@@ -54,3 +58,7 @@ migration-migrate db-migrate:
 migration-push db-push:
 	$(MAKE) migration-generate MESSAGE="$(MESSAGE)"
 	$(MAKE) migration-migrate
+
+# Regenerate docs/api/openapi.json from the FastAPI app.
+openapi:
+	$(UV) run python -m scripts.export_openapi
