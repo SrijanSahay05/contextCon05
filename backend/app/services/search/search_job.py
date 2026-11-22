@@ -19,6 +19,7 @@ from app.services.clients import clients_for_run
 from app.services.jobs.registry import register
 from app.services.jobs.steps import StepRunner, ensure_budget
 from app.services.scoring.service import score_search
+from app.services.search.concepts import gate
 from app.services.search.discovery import discover, enrich, months_before
 from app.services.search.grants import check_grants
 
@@ -50,6 +51,16 @@ def search_run(db: Session, runner: StepRunner, payload: dict[str, Any]) -> None
     # discovery order, enriched companies only
     company_ids = [uuid.UUID(enriched["companies"][str(cid)]) for cid in crust_ids
                    if str(cid) in enriched["companies"]]
+
+    concepts = [str(c.value) for c in spec.companies if c.op == "semantic"]
+    if concepts:
+        def run_concepts() -> dict[str, Any]:
+            out = gate(db, clients, company_ids, concepts, budget)
+            db.commit()
+            return out
+
+        gated = runner.step("concepts", run_concepts)
+        company_ids = [uuid.UUID(i) for i in gated["kept"]]
 
     def run_grants() -> dict[str, Any]:
         if spec.grants is None:
