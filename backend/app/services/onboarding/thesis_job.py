@@ -15,10 +15,11 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.models.entities import Company
-from app.models.enums import Confidence
+from app.models.enums import Confidence, SubjectType
 from app.models.identity import FundAlias, Investor, InvestorPostLink
 from app.models.onboarding import Deal
 from app.repositories import profiles, theses
+from app.repositories.facts import facts_for
 from app.services.clients import clients_for_run
 from app.services.jobs.registry import register
 from app.services.jobs.steps import StepRunner, ensure_budget
@@ -42,6 +43,28 @@ def _company_data(entry: dict[str, Any]) -> dict[str, Any] | None:
     return data if isinstance(data, dict) else None
 
 
+MAX_COMPANY_AGE_YEARS = 8
+# partner location text → Crustdata's ISO-3 `locations.country`; unknown → no filter
+COUNTRY_CODES = {
+    "india": "IND", "united states": "USA", "united kingdom": "GBR", "singapore": "SGP",
+    "germany": "DEU", "france": "FRA", "indonesia": "IDN", "united arab emirates": "ARE",
+}
+
+
+def partner_country(db: Session, investor_id: uuid.UUID) -> str | None:
+    """ISO-3 country of the confirmed partner, from their stored identity candidate."""
+    investor = db.get(Investor, investor_id)
+    if investor is None or investor.crustdata_person_id is None:
+        return None
+    for fact in facts_for(db, SubjectType.investor, investor_id, "identity_candidate"):
+        candidate = (fact.value or {}).get("candidate") or {}
+        if candidate.get("crustdata_person_id") == investor.crustdata_person_id:
+            location = str(candidate.get("location") or "").casefold()
+            return next((code for name, code in COUNTRY_CODES.items() if name in location),
+                        None)
+    return None
+
+
 @register("onboarding_thesis")
 def onboarding_thesis(db: Session, runner: StepRunner, payload: dict[str, Any]) -> None:
     investor_id = uuid.UUID(payload["investor_id"])
@@ -55,17 +78,28 @@ def onboarding_thesis(db: Session, runner: StepRunner, payload: dict[str, Any]) 
     names = {a.canonical_name for a in aliases}
     permalinks = {a.permalink for a in aliases}
 
+    country = partner_country(db, investor_id)
+
     def portfolio() -> list[int]:
+        # Target likely *entries*: a firm's new bets are young companies, and a global
+        # investor record (e.g. Accel) mixes regions, so stay in the partner's country.
+        # Live, the untargeted search returned only follow-ons in mature companies.
         ids: dict[int, None] = {}
         for name in sorted(names):
             ensure_budget(db, runner.run_id)
+            conditions: list[dict[str, Any]] = [
+                {"field": "funding.investors", "type": "in", "value": [name]},
+                {"field": "funding.last_fundraise_date", "type": "=>",
+                 "value": start.isoformat()},
+                {"field": "basic_info.year_founded", "type": "=>",
+                 "value": as_of.year - MAX_COMPANY_AGE_YEARS},
+            ]
+            if country:
+                conditions.append({"field": "locations.country", "type": "=", "value": country})
             found = crust.company_search({
-                "filters": {"op": "and", "conditions": [
-                    {"field": "funding.investors", "type": "in", "value": [name]},
-                    {"field": "funding.last_fundraise_date", "type": "=>",
-                     "value": start.isoformat()},
-                ]},
+                "filters": {"op": "and", "conditions": conditions},
                 "fields": ["basic_info"],
+                "sorts": [{"field": "funding.last_fundraise_date", "order": "desc"}],
                 "limit": SEARCH_LIMIT,
             })
             for company in (found.data or {}).get("companies") or []:

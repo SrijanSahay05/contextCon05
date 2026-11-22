@@ -114,3 +114,22 @@ def test_unknown_investor_without_linkedin_skips_partner(
     run_job(db, investor, fund)
     assert not any(path == "/person/enrich" for path, _ in requests)
     assert db.scalars(select(Thesis)).one().fund_id == fund.id
+
+
+def test_partner_country_from_confirmed_identity(db: Session) -> None:
+    from app.models.enums import ExtractedBy, SourceKind, SubjectType
+    from app.models.evidence import Fact, Source
+    from app.services.onboarding.thesis_job import partner_country
+
+    investor = Investor(name="P", crustdata_person_id=7)
+    source = Source(kind=SourceKind.crustdata, endpoint_or_url="/person/enrich")
+    db.add_all([investor, source])
+    db.flush()
+    for person_id, location in ((7, "Bengaluru, Karnataka, India"), (8, "London, UK")):
+        db.add(Fact(subject_type=SubjectType.investor, subject_id=investor.id,
+                    predicate="identity_candidate", source_id=source.id, locator={},
+                    extracted_by=ExtractedBy.rule, as_of=None,
+                    value={"candidate": {"crustdata_person_id": person_id,
+                                         "location": location}}))
+    db.commit()
+    assert partner_country(db, investor.id) == "IND"  # the confirmed person, not a namesake
