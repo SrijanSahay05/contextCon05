@@ -12,6 +12,7 @@ from app.repositories import scores
 from app.schemas.candidate import CandidateOut, StatusChange
 from app.schemas.common import RunAccepted
 from app.services.scoring.service import score_candidate
+from app.services.watch.recheck_job import daily_key, start_recheck
 
 router = APIRouter(
     prefix="/candidates", tags=["candidates"], responses=AUTH_RESPONSES,
@@ -54,6 +55,7 @@ def rescore(candidate_id: UUID, investor_id: InvestorId, db: Db) -> CandidateOut
 @router.post(
     "/{candidate_id}/recheck", response_model=RunAccepted, status_code=status.HTTP_202_ACCEPTED
 )
-def recheck(candidate_id: UUID) -> RunAccepted:
+def recheck(candidate_id: UUID, investor_id: InvestorId, db: Db) -> RunAccepted:
     """Fetch fresh data now ("re-check now"), then re-score. Spends credits."""
-    not_implemented()
+    candidate = scores.get_owned(db, candidate_id, investor_id)
+    return start_recheck(db, candidate, investor_id, daily_key(candidate.id))

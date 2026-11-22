@@ -1,34 +1,43 @@
 {
-  "_note": "shape from docs example; not live data",
+  "_note": "shape from docs.crustdata.com watcher-docs/company/entity.md (Smoke-test your webhook); not live data",
   "endpoint": "/watch/company/46936/test",
-  "request": {
-    "notification_endpoint": "https://scout.example.com/webhooks/crustdata"
-  },
+  "request": {},
   "headers": {},
   "response": {
     "delivered": [
       {
         "type": "webhook",
-        "url": "https://scout.example.com/webhooks/crustdata",
-        "status_code": 200,
-        "ok": true
+        "endpoint": "https://scout.example.com/webhooks/crustdata/watch?token=secret",
+        "http_status": 204,
+        "ok": true,
+        "response": ""
       }
     ],
     "envelope": {
-      "watch_id": 46936,
-      "kind": "entity",
-      "dataset": "company",
-      "test": true,
-      "notifications": [
+      "metadata": {
+        "watch_id": 46936,
+        "kind": "entity",
+        "dataset": "company",
+        "api_version": "2025-11-01",
+        "run_id": 1785211468,
+        "notification_id": "ntf_test_1785211468",
+        "delivered_at": "2026-07-28T04:04:28.168658Z",
+        "summary": {"delivered": 1, "total_count": 1, "records_searched": 1,
+                    "max_results_per_run": 25, "truncated": false, "records_matched": 1},
+        "test": true
+      },
+      "results": [
         {
-          "crustdata_company_id": 700001,
           "changes": [
-            {
-              "field": "funding.last_fundraise_date",
-              "old": "2023-11-10",
-              "new": "2025-02-18"
-            }
-          ]
+            {"field": "headcount.total", "type": "changed", "value": null, "from": null,
+             "to": 1234}
+          ],
+          "record": {
+            "crustdata_company_id": 814313,
+            "basic_info": {"name": "sample_text", "primary_domain": "sample_text",
+                           "industries": ["sample_text"]},
+            "headcount": {"total": 1234}
+          }
         }
       ]
     }
