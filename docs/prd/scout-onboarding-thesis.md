@@ -4,24 +4,43 @@ Part of [`scout-core.md`](scout-core.md). Status: draft, 22 Nov 2026.
 
 ## Goal
 
-From a partner's name and LinkedIn URL, produce a **draft investment thesis**:
+From who the partner is, produce two drafts, each citing the evidence behind
+every point:
 
-- based on the firm's verified recent deals
-- with every point citing the deals behind it
-- edited and confirmed by the partner before any search uses it
+1. A **draft investment thesis**, based on the firm's verified recent deals.
+2. A **draft scoring profile** (criteria, weights, rule parameters), based on the
+   partner's own profile, the firm, and its recent investment trend.
+
+The partner edits and confirms both before any search uses them.
+
+## Identifying the partner
+
+The partner gives either of these:
+
+- **A LinkedIn URL** → `person/enrich` directly.
+- **Their name and the firm they work at** → `company/identify` on the firm, then
+  `person/search` filtered on the name and current employer.
+  - One match is used directly.
+  - Several matches (people with the same name) are shown as a choice, with title,
+    location and photo-free summaries. The partner picks themselves.
+  - No match: we ask for the LinkedIn URL.
+
+Either way, the partner confirms "Is this you?" before anything else runs. This
+keeps the thesis from being built on someone else with the same name.
 
 ## Flow
 
 | Step | Call | Output |
 |---|---|---|
-| 1. Partner | `person/enrich` with the LinkedIn URL | `investor`: current employer (`crustdata_company_id`), title, career history |
+| 1. Partner | `person/enrich` (LinkedIn URL, or the confirmed match from name + firm) | `investor`: current employer (`crustdata_company_id`), title, dated career history, as facts |
 | 2. Firm | `company/enrich` on that employer | `fund`: official name, domain, description |
 | 3. Firm's investor record | Name matching (below) | Confirmed `fund_alias` rows, each with a Crunchbase permalink and its exact name |
 | 4. Candidate portfolio | `company/search` on `funding.investors` for each confirmed name, optionally with `funding.last_fundraise_date` inside the window | Companies the firm has backed at some point |
 | 5. Deals | `company/enrich` (funding, headcount, taxonomy) on each candidate | `deal` rows for rounds that name the firm (strict matching, below) |
 | 6. The partner's own deals | `social_post/search`: the partner as author, keywords like "backed", "invested", "welcome to the portfolio" | `deal.championed_by_investor_id` where a post names a portfolio company |
 | 7. Thesis | Counts computed in code (below) | `thesis` v1, `draft` |
-| 8. Confirm | The partner edits and confirms | `thesis` `confirmed`, plus a default `scoring_profile` |
+| 8. Scoring profile | Derivation rules over the deals at entry, the trend and the partner's career ([scoring spec](scout-scoring-actions.md#deriving-the-profile-onboarding)) | `scoring_profile` v1, `derived` (or `generic` when the evidence is thin), each change with its reason and evidence |
+| 9. Confirm | The partner edits and confirms the thesis and the profile (sliders, each with its reason) | `thesis` `confirmed`, `scoring_profile` confirmed |
 
 **Window:** the last 18 months by default. "Recent trend" compares the last 6
 months with the 12 months before.
@@ -111,7 +130,11 @@ exclusions, and add deals Scout missed (each with a URL as its source).
 - The firm is on the company but not on any round: "date unknown", left out of trends.
 - The partner's employer isn't an investor (e.g. a corporate venture arm with no
   `investors_detailed` entries): low confidence, and the partner is asked to add deals.
-- The LinkedIn URL doesn't resolve to a person: say so and ask for the firm name directly.
+- The LinkedIn URL doesn't resolve to a person: say so and ask for name + firm instead.
+- Name + firm matches two people: show both and let the partner pick; never auto-pick.
+- The partner recently changed firms (current employer started < 3 months ago): use
+  the new firm's deals for the thesis. The partner's past deals at the old firm feed
+  only the "partner lens" part of the profile, and this is labelled.
 
 All of these run as unit tests on fixed data, with no credits spent.
 

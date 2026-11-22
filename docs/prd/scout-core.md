@@ -20,9 +20,13 @@ from.
 
 ## What Scout does
 
-A partner signs in with their name and LinkedIn. Scout works out their firm's
-investment thesis from the firm's recent deals. The partner then asks in plain
-language, for example:
+A partner signs in with their LinkedIn, or their name and firm. From the partner's
+own profile, the firm and the firm's recent deals, Scout works out two things:
+
+- the firm's investment thesis
+- a scoring profile for this VC: which criteria matter and how much
+
+The partner confirms both. They then ask in plain language, for example:
 
 > "BITSian startups building in deeptech that received government grants in the last 6 months"
 
@@ -91,10 +95,15 @@ watch ──(new progress)──┘      pass ──(pivot / major change)──
 
 ## Main flows
 
-1. **Onboarding:** name and LinkedIn → firm → confirm which investor record is the
-   firm → recent deals → inferred thesis → the partner edits and confirms. Then
-   connect Gmail (optional; uploads work without it). See
-   `scout-onboarding-thesis.md`.
+1. **Onboarding:**
+   1. LinkedIn, or name + firm → "Is this you?"
+   2. The firm → confirm which investor record is the firm.
+   3. Recent deals → an inferred thesis and a derived scoring profile, each with
+      its evidence.
+   4. The partner edits and confirms.
+   5. Connect Gmail (optional; uploads work without it).
+   
+   See `scout-onboarding-thesis.md` and `scout-scoring-actions.md`.
 2. **Search:**
    1. The plain-language query is turned into structured filters, shown to the
       partner as editable chips. Every value is checked against Crustdata
@@ -174,7 +183,7 @@ Core tables are listed here; the companion specs add their own.
 | `fund_alias` | fund_id, permalink, canonical_name, confirmed_by, confirmed_at, source_id (see the onboarding spec) |
 | `deal` | fund_id, company_id, round_date, round_type, amount_usd, led, match_rule, match_evidence, championed_by_investor_id, source_id |
 | `thesis` | fund_id, version, status (`draft`/`confirmed`), window, deal_count, confidence, points (each with deal_ids) |
-| `scoring_profile` | thesis_id, version, criteria, thresholds, self_reported_weight, source_tiers |
+| `scoring_profile` | investor_id, thesis_id, version, origin (`derived`/`edited`/`generic`), confidence, criteria, thresholds, self_reported_weight, source_tiers, derivation (each change with its reason and evidence ids) |
 | `search` | investor_id, query_text, parsed_filters, as_of (nullable), status |
 | `job`, `run`, `run_step` | kind, payload, status, idempotency_key, attempts, credit_ceiling, deadline, step checkpoints |
 | `ledger` | run_id, provider, endpoint, credits_or_tokens, request_hash, source_id |
@@ -192,7 +201,8 @@ Core tables are listed here; the companion specs add their own.
 ### Routes (backend paths, no `/api` prefix)
 
 ```
-POST /investors/onboard {name, linkedin_url}    → run_id
+POST /investors/onboard {linkedin_url} | {name, firm}  → candidate people to confirm
+POST /investors/{id}/confirm-identity             → run_id (deals, thesis, profile)
 GET  /investors/{id}
 GET  /funds/{id}/alias-candidates · POST /funds/{id}/aliases   (confirm the firm's investor record)
 GET  /theses/{id} · PUT /theses/{id} · POST /theses/{id}/confirm
@@ -220,10 +230,11 @@ The DD and Gmail routes are in `scout-dd-loop.md`.
 ## Frontend
 
 1. **Onboarding:**
-   - name and LinkedIn
+   - LinkedIn, or name + firm, then "Is this you?"
    - live progress
    - "Which of these is your firm?" (choose the investor record)
    - the inferred thesis with the deals behind each point, editable before confirming
+   - the derived scoring profile as sliders, each with its reason and evidence, editable before confirming
    - "Connect Gmail"
 2. **Search:**
    - the plain-language box
@@ -289,8 +300,10 @@ The DD and Gmail routes are in `scout-dd-loop.md`.
 
 ## Open questions
 
-- **Scoring parameters:** the user will provide them. Generic criteria are used
-  until then (see the scoring spec).
+- **Scoring parameters:** derived per VC from their profile, the firm and its recent
+  trend (rules v1; calibration against peers is a stretch goal). Still open: whether
+  the rule thresholds in `profile_rules.json` match how VCs actually weigh things.
+  Sanity-check with a real partner if possible.
 - **Indian seed coverage in `funding.milestones`:** unverified until one real
   onboarding call. The fallback is that the partner confirms or adds deals, and a
   thin portfolio is labelled "low confidence".
