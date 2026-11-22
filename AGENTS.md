@@ -2,7 +2,7 @@
 
 Instructions for coding agents working in this repo. Monorepo:
 
-- `backend/` — FastAPI (Python 3.13+), sync SQLAlchemy 2.x + psycopg 3 on Postgres, Alembic, PyMongo on MongoDB, managed with uv
+- `backend/` — FastAPI (Python 3.13+), async SQLAlchemy 2.x + asyncpg on Postgres, Alembic, Redis (redis.asyncio), managed with uv
 - `frontend/` — Vite + React 19 + TypeScript, managed with pnpm; served by nginx in Docker
 - `docs/` — architecture reference, PRDs, implementation plans, change logs
 
@@ -12,7 +12,7 @@ Read `docs/architecture.md` before structural work: it describes the layout, the
 
 ```bash
 make install                         # uv sync (backend) + pnpm install (frontend)
-make dev                             # backend + Postgres + Mongo via docker compose
+make dev                             # backend + Postgres + Redis via docker compose
 make front                           # frontend dev server on :5173
 make up                              # full stack in Docker (nginx on :80)
 make dev-down                        # stop compose services

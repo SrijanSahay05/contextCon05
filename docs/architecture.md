@@ -7,12 +7,12 @@ Current-state reference. Update it in the same change when you alter the stack, 
 | Layer | Choice | Notes |
 |-------|--------|-------|
 | API | FastAPI (Python 3.13+) | Served by uvicorn with `--reload` in Docker |
-| Relational DB | PostgreSQL 17 | Accessed via SQLAlchemy 2.x (sync) + psycopg 3 |
+| Relational DB | PostgreSQL 17 | Accessed via async SQLAlchemy 2.x + asyncpg |
 | Migrations | Alembic | Lives in `backend/migrations/`; autogenerates from `Base.metadata` |
-| Document DB | MongoDB 8 | Accessed via PyMongo (sync `MongoClient`) |
+| Cache / realtime state | Redis 7 | `redis.asyncio` client; realtime tickets, presence, locks, pub/sub |
 | Config | pydantic-settings | Reads env vars and `backend/.env` |
 | Python tooling | uv | `pyproject.toml` + `uv.lock` in `backend/` |
-| Backend quality | flake8, mypy (strict + pydantic plugin), pytest | Tests run against real Postgres + Mongo |
+| Backend quality | flake8, mypy (strict + pydantic plugin), pytest | Tests run against real Postgres + Redis |
 | Frontend | Vite + React 19 + TypeScript | pnpm 12 (pinned via `packageManager`); `oxlint` lint, `tsc -b` typecheck, Vitest + Testing Library (jsdom) tests |
 | CI | GitHub Actions | `.github/workflows/ci.yml`: `backend` and `frontend` jobs on every PR and push to `main` |
 | Frontend serving (Docker) | nginx | Serves the built SPA and reverse-proxies `/api/*` to the backend |
@@ -23,7 +23,7 @@ Current-state reference. Update it in the same change when you alter the stack, 
 ```
 .
 ├── Makefile               # entry point for every common command
-├── docker-compose.yml     # frontend (nginx), backend, db (postgres), mongo
+├── docker-compose.yml     # frontend (nginx), backend, db (postgres), redis
 ├── AGENTS.md / CLAUDE.md  # instructions for coding agents
 ├── .github/               # CI workflow (ci.yml) + PR template
 ├── .claude/skills/        # project skills (commit-and-pr)
@@ -38,13 +38,13 @@ Current-state reference. Update it in the same change when you alter the stack, 
 │   ├── .env.example       # copy to .env (git-ignored)
 │   ├── alembic.ini
 │   ├── migrations/        # env.py, script.py.mako, versions/
-│   ├── tests/             # pytest (hits real Postgres + Mongo)
+│   ├── tests/             # pytest (hits real Postgres + Redis)
 │   ├── .flake8            # flake8 config; mypy + pytest config in pyproject.toml
 │   └── app/
-│       ├── main.py        # FastAPI app; includes routers
+│       ├── main.py        # FastAPI app; lifespan opens the DB engine + Redis; includes routers
 │       ├── core/config.py # Settings + cached get_settings()
-│       ├── db/session.py  # SQLAlchemy engine, SessionLocal, get_db dependency
-│       ├── db/mongo.py    # Mongo client + default database handle
+│       ├── db/session.py  # async engine + session factory builders, get_db dependency
+│       ├── db/redis.py    # Redis client builder, get_redis dependency
 │       ├── models/        # ORM models; base.py holds the DeclarativeBase
 │       └── routes/        # one APIRouter per resource (health.py so far)
 └── frontend/
@@ -57,11 +57,12 @@ Current-state reference. Update it in the same change when you alter the stack, 
 ## Backend architecture
 
 - **Config.** `app/core/config.py` defines `Settings`; always read it through `get_settings()` (cached), never instantiate `Settings` directly.
-- **Postgres.** `app/db/session.py` creates one engine at import time. Routes take a session with `db: Session = Depends(get_db)`; the session closes when the request ends. Commit explicitly in the code that writes.
-- **Mongo.** `app/db/mongo.py` exposes `mongo_client` and `mongo_db` (the database named by `MONGO_DB`). Use `mongo_db["collection"]` directly.
+- **Lifespan.** `app/main.py`'s `lifespan` creates the async engine, the session factory (`app.state.db_session_factory`) and the Redis client (`app.state.redis`) on startup, and closes them on shutdown. Nothing connects at import time. Tests must use `with TestClient(app) as client:` so the lifespan runs.
+- **Postgres.** Routes are `async def` and take `db: AsyncSession = Depends(get_db)`. `get_db` commits when the request succeeds and rolls back on an exception. Sessions use `expire_on_commit=False`.
+- **Redis.** Routes take `redis: Redis = Depends(get_redis)` (decoded strings). Use it for short-lived shared state; durable data goes in Postgres.
 - **Models.** Every ORM model subclasses `Base` from `app/models/base.py` and must be imported in `app/models/__init__.py`; `migrations/env.py` imports `app.models`, so a model missing there is invisible to autogenerate.
 - **Routes.** Each module in `app/routes/` exports `router = APIRouter(...)`, and `app/main.py` includes it. Routes are mounted without an `/api` prefix.
-- **Migrations.** `migrations/env.py` sets the URL from `get_settings().database_url`, so the value in `alembic.ini` is intentionally blank. Generate with `make db-generate MESSAGE="..."`, apply with `make db-migrate`. Review every autogenerated revision before applying.
+- **Migrations.** `migrations/env.py` (Alembic's async template, running on asyncpg) sets the URL from `get_settings().database_url`, so the value in `alembic.ini` is intentionally blank. Generate with `make db-generate MESSAGE="..."`, apply with `make db-migrate`. Review every autogenerated revision before applying.
 
 As the app grows, follow the same layering KITH uses: `routes/` (HTTP) → `services/` (business logic) → `repositories/` (DB access), with request/response models in `schemas/`. These folders are created when first needed.
 
@@ -78,15 +79,15 @@ So `fetch('/api/healthz')` hits the backend's `/healthz` in both setups.
 
 ```
 browser ──/api/x──▶ vite dev proxy (dev) or nginx (docker) ──/x──▶ FastAPI router
-                                                                   ├─ get_db() ──▶ Postgres
-                                                                   └─ mongo_db ──▶ MongoDB
+                                                                   ├─ get_db()    ──▶ Postgres
+                                                                   └─ get_redis() ──▶ Redis
 ```
 
 ## Configuration & environments
 
 - One env file: `backend/.env` (copy from `backend/.env.example`).
 - It feeds both the app (via pydantic-settings) and docker compose interpolation (via `make`, which passes `--env-file backend/.env`). Plain `docker compose up` without that flag fails on missing credentials, on purpose.
-- `DATABASE_URL` / `MONGO_URL` in `.env` point at `localhost`, for running the app or Alembic on the host. Compose overrides both for the backend container to use the service hostnames `db` and `mongo`.
+- `DATABASE_URL` / `REDIS_URL` in `.env` point at `localhost`, for running the app or Alembic on the host. Compose overrides both for the backend container to use the service hostnames `db` and `redis`.
 
 ## Ports
 
@@ -96,4 +97,4 @@ browser ──/api/x──▶ vite dev proxy (dev) or nginx (docker) ──/x─
 | frontend (Vite dev) | 5173 |
 | backend | 8000 |
 | postgres | 5433 (container 5432) |
-| mongo | 27017 |
+| redis | 6380 (container 6379) |
