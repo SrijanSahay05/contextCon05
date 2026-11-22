@@ -158,7 +158,8 @@ def _background(claim: Item, facts: list[Item]) -> Outcome:
 
 def _grant(claim: Item, facts: list[Item]) -> Outcome:
     value = claim.value if isinstance(claim.value, dict) else {"program": claim.value}
-    program = value.get("program")
+    # ingestion asks for `name`; web-verified grant facts store `program`
+    program = value.get("program") or value.get("name")
     for f in facts:
         if f.predicate == GRANT and isinstance(f.value, dict) \
                 and _contains(program, f.value.get("program")):

@@ -181,3 +181,12 @@ def test_round_type_labels_and_exact_company_fields_from_live_run() -> None:
                  facts)[0] == "verified"
     assert check(Item("c", "year_founded", 2017, None, "company"),
                  facts)[0] == "contradicted"
+
+
+def test_grant_claim_named_like_ingestion_matches_the_web_fact() -> None:
+    from app.services.dd.verify import verify as check
+    from app.services.scoring.rules import Item
+
+    facts = [Item(1, "grant", {"program": "iDEX - DIO", "quote": "..."}, None, "company")]
+    claim = Item("g", "grant", {"name": "iDEX", "amount": None}, None, "company")
+    assert check(claim, facts)[0] == "verified"
