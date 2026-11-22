@@ -1,0 +1,113 @@
+{
+  "_note": "synthetic search-run world built from the documented Crustdata shapes; not live data. The fake transport serves company/person enrich and job search per requested id/url.",
+  "people_route": {
+    "profiles": [
+      {"crustdata_person_id": 990001, "basic_profile": {"name": "Kavya Nair"},
+       "experience": {"employment_details": {"current": [
+         {"name": "Paysetu", "title": "Co-founder & CEO", "crustdata_company_id": 700101}]}},
+       "social_handles": {"professional_network_identifier": {"profile_url": "https://www.linkedin.com/in/kavya-nair"}}},
+      {"crustdata_person_id": 990002, "basic_profile": {"name": "Arjun Das"},
+       "experience": {"employment_details": {"current": [
+         {"name": "Kosh Labs", "title": "Founder", "crustdata_company_id": 700102}]}},
+       "social_handles": {"professional_network_identifier": {"profile_url": "https://www.linkedin.com/in/arjun-das"}}},
+      {"crustdata_person_id": 990003, "basic_profile": {"name": "No Employer"},
+       "experience": {"employment_details": {"current": [{"name": "Stealth", "title": "Founder"}]}}}
+    ],
+    "next_cursor": null,
+    "total_count": 3
+  },
+  "company_route": {
+    "companies": [
+      {"crustdata_company_id": 700103, "basic_info": {"name": "GridDeep"}},
+      {"crustdata_company_id": 700101, "basic_info": {"name": "Paysetu"}}
+    ],
+    "next_cursor": null,
+    "total_count": 2
+  },
+  "companies": {
+    "700101": {
+      "crustdata_company_id": 700101,
+      "updated_at": "2026-11-01T00:00:00Z",
+      "basic_info": {"name": "Paysetu", "primary_domain": "paysetu.in", "year_founded": 2024,
+                     "description": "UPI payouts for gig platforms"},
+      "headcount": {"total": 18, "timeseries": [{"date": "2026-05-01", "employee_count": 9},
+                                                {"date": "2026-11-01", "employee_count": 18}],
+                    "by_role_absolute": {"engineering": 10, "sales": 3}},
+      "funding": {"total_investment_usd": 1500000, "last_round_type": "seed",
+                  "last_fundraise_date": "2026-03-10",
+                  "milestones": [{"round_type": "seed", "amount_usd": 1500000,
+                                  "funding_date": "2026-03-10", "investors": "Accel, Blume"}]},
+      "taxonomy": {"professional_network_industries": ["Financial Services"]},
+      "locations": {"country": "IND", "city": "Bengaluru",
+                    "headquarters": "Bengaluru, Karnataka, India"}
+    },
+    "700102": {
+      "crustdata_company_id": 700102,
+      "basic_info": {"name": "Kosh Labs", "primary_domain": "koshlabs.in"},
+      "taxonomy": {"professional_network_industries": ["Software Development"]},
+      "locations": {"country": "IND"}
+    },
+    "700103": {
+      "crustdata_company_id": 700103,
+      "basic_info": {"name": "GridDeep", "primary_domain": "griddeep.in"},
+      "taxonomy": {"professional_network_industries": ["Renewable Energy"]},
+      "locations": {"country": "IND"}
+    }
+  },
+  "founders": {
+    "profiles": [
+      {"crustdata_person_id": 990001, "basic_profile": {"name": "Kavya Nair"},
+       "experience": {"employment_details": {"current": [
+         {"name": "Paysetu", "title": "Co-founder & CEO", "crustdata_company_id": 700101}]}},
+       "social_handles": {"professional_network_identifier": {"profile_url": "https://www.linkedin.com/in/kavya-nair"}}},
+      {"crustdata_person_id": 990004, "basic_profile": {"name": "Rohan Iyer"},
+       "experience": {"employment_details": {"current": [
+         {"name": "Paysetu", "title": "Co-founder & CTO", "crustdata_company_id": 700101}]}},
+       "social_handles": {"professional_network_identifier": {"profile_url": "https://www.linkedin.com/in/rohan-iyer"}}}
+    ],
+    "next_cursor": null,
+    "total_count": 2
+  },
+  "people": {
+    "https://www.linkedin.com/in/kavya-nair": {
+      "crustdata_person_id": 990001,
+      "basic_profile": {"name": "Kavya Nair", "current_title": "Co-founder & CEO",
+                        "headline": "Building Paysetu"},
+      "experience": {"employment_details": {
+        "current": [{"name": "Paysetu", "title": "Co-founder & CEO",
+                     "crustdata_company_id": 700101, "start_date": "2024-01-01T00:00:00+00:00"}],
+        "past": [{"name": "Razorpay", "title": "Product Manager", "crustdata_company_id": 640123,
+                  "start_date": "2019-07-01T00:00:00+00:00",
+                  "end_date": "2023-12-01T00:00:00+00:00"}]}},
+      "education": {"schools": [{"school": "BITS Pilani", "degree": "B.E.",
+                                 "field_of_study": "Computer Science"}]}
+    },
+    "https://www.linkedin.com/in/rohan-iyer": {
+      "crustdata_person_id": 990004,
+      "basic_profile": {"name": "Rohan Iyer", "current_title": "Co-founder & CTO"},
+      "experience": {"employment_details": {
+        "current": [{"name": "Paysetu", "title": "Co-founder & CTO",
+                     "crustdata_company_id": 700101, "start_date": "2024-01-01T00:00:00+00:00"}]}}
+    }
+  },
+  "jobs": {
+    "700101": [
+      {"job_details": {"title": "Backend Engineer", "category": "Engineering",
+                       "url": "https://www.linkedin.com/jobs/view/1"},
+       "metadata": {"date_added": "2026-11-02T10:00:00"}},
+      {"job_details": {"title": "Sales Lead", "category": "Sales",
+                       "url": "https://www.linkedin.com/jobs/view/2"},
+       "metadata": {"date_added": "2026-10-20T10:00:00"}}
+    ]
+  },
+  "web_results": [
+    {"source": "web", "title": "Seed Fund awardees",
+     "url": "https://seedfund.startupindia.gov.in/awardees/paysetu", "position": 1},
+    {"source": "news", "title": "Paysetu wins grant",
+     "url": "https://news.example.in/paysetu-grant", "position": 2}
+  ],
+  "pages": {
+    "https://seedfund.startupindia.gov.in/awardees/paysetu": "<html><body><h1>Awardees</h1><p>Paysetu was awarded &#8377;20 lakh under the Startup India Seed Fund Scheme in June 2026.</p></body></html>",
+    "https://news.example.in/paysetu-grant": "<html><body><p>Fintech startups keep raising money.</p></body></html>"
+  }
+}
