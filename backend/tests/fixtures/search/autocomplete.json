@@ -1,0 +1,24 @@
+{
+  "_note": "hand-written autocomplete replies in the documented shape; not live data. Any request not listed gets {\"suggestions\": []}.",
+  "replies": [
+    {
+      "endpoint": "/person/search/autocomplete",
+      "request": {"field": "education.schools.school", "query": "Birla Institute of Technology and Science", "limit": 10},
+      "response": {"suggestions": [
+        {"value": "Birla Institute of Technology and Science, Pilani"},
+        {"value": "Birla Institute of Technology and Science, Pilani - Goa Campus"},
+        {"value": "Birla Institute of Technology"}
+      ]}
+    },
+    {
+      "endpoint": "/person/search/autocomplete",
+      "request": {"field": "education.schools.school", "query": "Hogwarts Poly", "limit": 10},
+      "response": {"suggestions": [{"value": "Hogwarts University"}]}
+    },
+    {
+      "endpoint": "/company/search/autocomplete",
+      "request": {"field": "locations.country", "query": "India", "limit": 10},
+      "response": {"suggestions": [{"value": "India"}, {"value": "British Indian Ocean Territory"}]}
+    }
+  ]
+}
