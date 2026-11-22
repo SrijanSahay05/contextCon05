@@ -1,0 +1,36 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/company/enrich",
+  "request": {
+    "crustdata_company_ids": [
+      500100
+    ],
+    "fields": [
+      "basic_info"
+    ]
+  },
+  "headers": {
+    "x-credits-used": "2"
+  },
+  "response": [
+    {
+      "matched_on": "500100",
+      "match_type": "crustdata_company_id",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 500100,
+            "basic_info": {
+              "crustdata_company_id": 500100,
+              "name": "Accel",
+              "primary_domain": "accel.com",
+              "description": "Early and growth-stage venture capital firm.",
+              "company_type": "Partnership"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
