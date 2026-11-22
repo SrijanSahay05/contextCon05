@@ -4,7 +4,7 @@ import uuid
 from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import Index, Numeric, String, Text
+from sqlalchemy import Index, Numeric, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -41,6 +41,15 @@ class Fact(Base):
     __tablename__ = "fact"
     __table_args__ = (
         Index("ix_fact_subject_predicate", "subject_type", "subject_id", "predicate"),
+        # one fact per (subject, predicate, value, as_of, source): concurrent workers
+        # persisting the same record can't duplicate it
+        Index(
+            "uq_fact_identity",
+            "subject_type", "subject_id", "predicate", "source_id", "as_of",
+            text("md5(value::text)"),
+            unique=True,
+            postgresql_nulls_not_distinct=True,
+        ),
     )
 
     id: Mapped[int] = bigint_pk()
