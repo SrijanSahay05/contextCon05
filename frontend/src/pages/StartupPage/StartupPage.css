@@ -1,0 +1,73 @@
+.startup-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent);
+}
+.startup-page__back:hover {
+  text-decoration: underline;
+}
+
+.startup-page__header {
+  display: grid;
+  grid-template-columns: 64px 1fr 76px;
+  gap: 20px;
+  align-items: start;
+}
+.startup-page__title h1 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+}
+.startup-page__tagline {
+  margin-top: 6px;
+  font-size: 19px;
+  line-height: 1.42;
+  letter-spacing: -0.016em;
+  color: var(--text-2);
+}
+.startup-page__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.startup-page__founders {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.startup-page__actions {
+  margin: 24px 0 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.startup-page__actions .startup-actions {
+  justify-content: flex-start;
+}
+
+.startup-page--missing {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  margin-top: 120px;
+  color: var(--text-2);
+}
+
+@media (max-width: 640px) {
+  .startup-page__header {
+    grid-template-columns: 1fr 76px;
+  }
+  .startup-page__header > .monogram {
+    display: none;
+  }
+}
+
+.startup-page__link {
+  color: var(--accent);
+}
+.startup-page__link:hover {
+  text-decoration: underline;
+}

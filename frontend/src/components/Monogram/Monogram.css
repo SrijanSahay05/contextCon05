@@ -1,0 +1,22 @@
+.monogram {
+  display: grid;
+  place-items: center;
+  flex: none;
+  font-weight: 600;
+  color: hsl(var(--hue) 55% 38%);
+  background: hsl(var(--hue) 70% 95%);
+}
+
+.monogram--md {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.monogram--lg {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  font-size: 26px;
+}

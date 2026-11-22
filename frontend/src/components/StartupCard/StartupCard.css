@@ -1,0 +1,139 @@
+.card {
+  position: relative;
+  padding: 20px 20px 16px;
+  margin-bottom: 6px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition:
+    background-color var(--t-base) ease,
+    transform var(--t-fast) ease;
+  will-change: transform, opacity;
+}
+.card:hover {
+  background: var(--surface-2);
+}
+.card:active:not(:has(button:active)) {
+  transform: scale(0.995);
+}
+
+/* Hairline between cards, hidden around the hovered one. */
+.card + .card::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: var(--line);
+  transition: opacity var(--t-base) ease;
+}
+.card:hover::before,
+.card:hover + .card::before {
+  opacity: 0;
+}
+
+.card__main {
+  display: grid;
+  grid-template-columns: 44px 1fr 56px;
+  gap: 16px;
+  align-items: start;
+}
+
+.card__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.card__title {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: left;
+}
+.card__meta {
+  font-size: 13px;
+  color: var(--text-3);
+  letter-spacing: -0.004em;
+}
+
+.card__tagline {
+  margin-top: 3px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+.card__signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.card__why {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.card__why strong {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+.card__founders {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.card__status--high {
+  color: var(--green);
+}
+.card__status--steady {
+  color: var(--accent);
+}
+.card__status--slow {
+  color: var(--text-3);
+}
+.card__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  animation: breathe 2s ease-in-out infinite;
+}
+
+.card__actions {
+  margin-top: 14px;
+  padding-left: 60px;
+}
+
+@media (max-width: 640px) {
+  .card__main {
+    grid-template-columns: 1fr 56px;
+  }
+  .card__main > .monogram {
+    display: none;
+  }
+  .card__actions {
+    padding-left: 0;
+  }
+}
