@@ -1,4 +1,8 @@
-"""`search_run` job: discover → enrich → grants → candidates.
+"""`search_run` job: discover → fit → enrich → grants → candidates → score.
+
+`fit` (when the query has concepts or a ranking description) rates the search rows'
+descriptions before anything is enriched, so only the best `search_enrich_cap` companies
+are paid for.
 
 Payload: `{search_id, investor_id}`. Every step is resumable and idempotent. Scoring and
 the final `search.status` are left to the steps the integrator appends.
@@ -10,6 +14,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.models.entities import Company
 from app.models.enums import SearchStatus
 from app.models.search import Search
@@ -19,7 +24,7 @@ from app.services.clients import clients_for_run
 from app.services.jobs.registry import register
 from app.services.jobs.steps import StepRunner, ensure_budget
 from app.services.scoring.service import score_search
-from app.services.search.concepts import gate
+from app.services.search.concepts import record_fits, rerank
 from app.services.search.discovery import discover, enrich, months_before
 from app.services.search.grants import check_grants
 
@@ -40,27 +45,27 @@ def search_run(db: Session, runner: StepRunner, payload: dict[str, Any]) -> None
         ensure_budget(db, runner.run_id)
 
     found = runner.step("discover", lambda: discover(clients, spec, as_of, budget))
-    crust_ids = [c["crustdata_company_id"] for c in found["candidates"]]
+    candidates: list[dict[str, Any]] = found["candidates"]
+
+    concepts = [str(c.value) for c in spec.companies if c.op == "semantic"]
+    fitted: list[dict[str, Any]] = []
+    if concepts or spec.ranking_query:
+        fit = runner.step("fit", lambda: rerank(
+            clients, candidates, concepts, spec.ranking_query, budget))
+        candidates = fitted = fit["kept"]
+
+    crust_ids = [c["crustdata_company_id"] for c in candidates][:get_settings().search_enrich_cap]
 
     def run_enrich() -> dict[str, Any]:
         out = enrich(db, clients, crust_ids, budget)
+        out["fit_facts"] = record_fits(db, fitted, out["companies"])
         db.commit()
         return out
 
     enriched = runner.step("enrich", run_enrich)
-    # discovery order, enriched companies only
+    # fit (else discovery) order, enriched companies only
     company_ids = [uuid.UUID(enriched["companies"][str(cid)]) for cid in crust_ids
                    if str(cid) in enriched["companies"]]
-
-    concepts = [str(c.value) for c in spec.companies if c.op == "semantic"]
-    if concepts:
-        def run_concepts() -> dict[str, Any]:
-            out = gate(db, clients, company_ids, concepts, budget)
-            db.commit()
-            return out
-
-        gated = runner.step("concepts", run_concepts)
-        company_ids = [uuid.UUID(i) for i in gated["kept"]]
 
     def run_grants() -> dict[str, Any]:
         if spec.grants is None:

@@ -6,12 +6,14 @@ them by Crustdata company id. Enrichment stores company, founder and open-role f
 through the 1A mappers so every fact's locator resolves against its stored payload.
 """
 
+import json
 from collections.abc import Callable
 from datetime import date
 from typing import Any
 
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.models.entities import Company
 from app.models.enums import SubjectType
 from app.schemas.search import Condition, FilterSpec
@@ -26,8 +28,10 @@ from app.services.evidence.facts_mapper import (
 )
 
 WITHIN_LIMIT = 500  # employer ids passed to the company search
-MAX_CANDIDATES = 30
 SEARCH_LIMIT = 100
+# the pool handed to the fit rerank; only the top `search_enrich_cap` are enriched
+MAX_CANDIDATES = SEARCH_LIMIT
+FOUNDED_FIELD = "basic_info.year_founded"
 ENRICH_BATCH = 25
 JOB_LIMIT = 20
 OPEN_ROLES = "open_roles"
@@ -103,23 +107,42 @@ def people_request(spec: FilterSpec) -> dict[str, Any]:
     }
 
 
+def ranking_text(spec: FilterSpec) -> str:
+    """What the search ranks by: the plan's description plus the query's own concept words
+    (kept verbatim so the keyword half of hybrid search can match them)."""
+    concepts = [str(c.value) for c in spec.companies if c.op == "semantic"]
+    parts = [spec.ranking_query] if spec.ranking_query else []
+    parts += [c for c in concepts if c.casefold() not in (spec.ranking_query or "").casefold()]
+    return ". ".join(p.strip().rstrip(".") for p in parts if p.strip())
+
+
+def startup_gates(conditions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Always-on filters that keep out long-established companies. Only basic_info fields,
+    which carry no premium filter charge. A founded year in the query wins."""
+    year = get_settings().search_founded_from_year
+    if year <= 0 or FOUNDED_FIELD in json.dumps(conditions):
+        return []
+    return [{"field": FOUNDED_FIELD, "type": "=>", "value": year}]
+
+
 def company_request(
     spec: FilterSpec, as_of: date, within: list[int] | None = None
 ) -> dict[str, Any]:
     """`within` restricts the company search to these ids (the people route's employers)."""
-    semantic = [str(c.value) for c in spec.companies if c.op == "semantic"]
     conditions = [_condition(c, COMPANY_FIELDS)
                   for c in spec.companies + spec.funding if c.op != "semantic"]
     if spec.window_months and spec.funding:
         conditions.append({"field": "funding.last_fundraise_date", "type": "=>",
                            "value": months_before(as_of, spec.window_months).isoformat()})
+    conditions += startup_gates(conditions)
     if within is not None:
         conditions.append({"field": "crustdata_company_id", "type": "in", "value": within})
+    # basic_info carries the description the fit rerank reads, at the base result price
     body: dict[str, Any] = {"fields": ["basic_info"], "limit": SEARCH_LIMIT}
     if conditions:
         body["filters"] = _and(conditions)
-    if semantic:
-        body["search"] = {"query": " ".join(semantic), "mode": "semantic"}
+    if query := ranking_text(spec):
+        body["search"] = {"query": query, "mode": get_settings().search_mode}
     return body
 
 
@@ -130,8 +153,19 @@ def _current_employers(profile: dict[str, Any]) -> list[int]:
             if isinstance(j, dict) and (j.get("crustdata_company_id") or 0) > 0]
 
 
+def _described(company: dict[str, Any], i: int, source_id: str) -> dict[str, Any]:
+    """Name and description from a search row, with where they sit in the raw response."""
+    info = company.get("basic_info") or {}
+    out: dict[str, Any] = {"name": info.get("name")}
+    if isinstance(info.get("description"), str) and info["description"].strip():
+        out.update(description=info["description"], source_id=source_id,
+                   path=f"companies[{i}].basic_info.description")
+    return out
+
+
 def discover(clients: Clients, spec: FilterSpec, as_of: date, budget: Budget) -> dict[str, Any]:
-    """Candidates in rank order with `found_by`.
+    """Candidates in rank order with `found_by`, plus name and description when the
+    company search returned them (the fit rerank reads these before anything is enriched).
 
     With people and company terms, the company search (incl. the semantic ranking) runs
     *within* the people route's employers, so every candidate satisfies both. Live, the
@@ -139,6 +173,7 @@ def discover(clients: Clients, spec: FilterSpec, as_of: date, budget: Budget) ->
     that matched only half the request.
     """
     route_counts: dict[str, int] = {}
+    details: dict[int, dict[str, Any]] = {}
     people_ids: list[int] | None = None
     if spec.people:
         budget()
@@ -148,7 +183,9 @@ def discover(clients: Clients, spec: FilterSpec, as_of: date, budget: Budget) ->
         ))
         route_counts["people"] = len(people_ids)
 
-    has_company_terms = bool(spec.companies or spec.funding)
+    # a ranking description alone still runs the company search: it orders the people
+    # route's employers and applies the startup gates
+    has_company_terms = bool(spec.companies or spec.funding or spec.ranking_query)
     if people_ids is not None and not has_company_terms:
         mode, ranked = "people", people_ids
     elif people_ids is not None and not people_ids:
@@ -157,9 +194,12 @@ def discover(clients: Clients, spec: FilterSpec, as_of: date, budget: Budget) ->
         budget()
         within = people_ids[:WITHIN_LIMIT] if people_ids is not None else None
         found = clients.crustdata.company_search(company_request(spec, as_of, within))
-        ranked = [int(c["crustdata_company_id"])
-                  for c in (found.data or {}).get("companies") or []
-                  if int(c.get("crustdata_company_id") or 0) > 0]
+        ranked = []
+        for i, c in enumerate((found.data or {}).get("companies") or []):
+            cid = int(c.get("crustdata_company_id") or 0)
+            if cid > 0:
+                ranked.append(cid)
+                details.setdefault(cid, _described(c, i, str(found.source_id)))
         route_counts["company"] = len(set(ranked))
         mode = "company" if people_ids is None else "people_then_company"
     else:
@@ -169,7 +209,7 @@ def discover(clients: Clients, spec: FilterSpec, as_of: date, budget: Budget) ->
     return {
         "mode": mode,
         "route_counts": route_counts,
-        "candidates": [{"crustdata_company_id": cid, "found_by": found_by}
+        "candidates": [{"crustdata_company_id": cid, "found_by": found_by, **details.get(cid, {})}
                        for cid in list(dict.fromkeys(ranked))[:MAX_CANDIDATES]],
     }
 

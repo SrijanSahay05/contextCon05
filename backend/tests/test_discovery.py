@@ -4,9 +4,11 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.db.mongo import mongo_db
 from app.models.entities import Company, CompanyPerson, Person
 from app.models.enums import SubjectType
@@ -101,27 +103,63 @@ def test_people_route_adds_founder_titles_and_returns_employers() -> None:
     assert {c["field"] for c in titles["conditions"]} == {discovery.TITLE_FIELD}
 
 
-def test_company_route_uses_semantic_mode_and_industry_filter() -> None:
+def test_company_route_uses_hybrid_ranking_and_industry_filter() -> None:
     fake = FakeWorld()
     out = discover(fake, companies=[INDUSTRY, SEMANTIC], funding=[
         {"field": "last_funding_round_type", "op": "in", "value": ["seed"], "display": "Seed"}],
         window_months=18)
     assert [c["crustdata_company_id"] for c in out["candidates"]] == [700103, 700101]
     [body] = fake.paths("/company/search")
-    assert body["search"] == {"query": "payments infrastructure", "mode": "semantic"}
+    assert body["search"] == {"query": "payments infrastructure", "mode": "hybrid"}
     assert body["filters"]["conditions"] == [
         {"field": "basic_info.industries", "type": "in", "value": ["Financial Services"]},
         {"field": "funding.last_round_type", "type": "in", "value": ["seed"]},
         {"field": "funding.last_fundraise_date", "type": "=>", "value": "2025-05-22"},
+        {"field": "basic_info.year_founded", "type": "=>", "value": 2016},  # startup gate
     ]
+    paysetu = out["candidates"][1]
+    assert paysetu["name"] == "Paysetu"
+    assert paysetu["path"] == "companies[1].basic_info.description"
+    assert _resolve(fake.world["company_route"], paysetu["path"]) == paysetu["description"]
+
+
+def test_ranking_query_alone_runs_a_ranked_company_search() -> None:
+    fake = FakeWorld()
+    out = discover(fake, ranking_query="Software for Indian 3PLs to plan line-haul routes.",
+                   companies=[SEMANTIC])
+    assert out["mode"] == "company"
+    [body] = fake.paths("/company/search")
+    assert body["search"]["query"] == (
+        "Software for Indian 3PLs to plan line-haul routes. payments infrastructure")
+    assert body["filters"] == {"field": "basic_info.year_founded", "type": "=>", "value": 2016}
+
+
+def test_founded_year_in_the_query_replaces_the_startup_gate() -> None:
+    fake = FakeWorld()
+    discover(fake, companies=[INDUSTRY, {"field": "basic_info.year_founded", "op": ">",
+                                         "value": 2010, "display": "Founded after 2010"}])
+    [body] = fake.paths("/company/search")
+    founded = [c for c in body["filters"]["conditions"]
+               if c["field"] == "basic_info.year_founded"]
+    assert founded == [{"field": "basic_info.year_founded", "type": ">", "value": 2010}]
+
+
+def test_startup_gate_can_be_turned_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(get_settings(), "search_founded_from_year", 0)
+    fake = FakeWorld()
+    discover(fake, companies=[INDUSTRY])
+    [body] = fake.paths("/company/search")
+    assert body["filters"] == {
+        "field": "basic_info.industries", "type": "in", "value": ["Financial Services"]}
 
 
 def test_company_search_runs_within_the_founders_companies() -> None:
     fake = FakeWorld()
     out = discover(fake, people=[SCHOOL], companies=[INDUSTRY])
     assert out["mode"] == "people_then_company"
-    assert out["candidates"] == [
-        {"crustdata_company_id": 700101, "found_by": ["people", "company"]}]
+    [candidate] = out["candidates"]
+    assert candidate["crustdata_company_id"] == 700101
+    assert candidate["found_by"] == ["people", "company"]
     [body] = fake.paths("/company/search")
     [within] = [c for c in body["filters"]["conditions"]
                 if c["field"] == "crustdata_company_id"]
@@ -140,11 +178,11 @@ def test_no_overlap_means_no_candidates_not_a_union() -> None:
 def test_dedupe_cap_and_invalid_ids() -> None:
     fake = FakeWorld()
     fake.world["company_route"]["companies"] = [
-        {"crustdata_company_id": i % 40} for i in range(80)]  # includes id 0, seen live
+        {"crustdata_company_id": i % 150} for i in range(300)]  # includes id 0, seen live
     out = discover(fake, companies=[INDUSTRY])
     ids = [c["crustdata_company_id"] for c in out["candidates"]]
     assert ids == list(range(1, discovery.MAX_CANDIDATES + 1))
-    assert out["route_counts"] == {"company": 39}
+    assert out["route_counts"] == {"company": 149}
 
 
 def enrich(db: Session, fake: FakeWorld) -> dict[str, Any]:

@@ -141,14 +141,21 @@ Required headers on every call: `authorization: Bearer <key>` and `x-api-version
 | Partner profile | `person/enrich` (LinkedIn URL) | 1–9 |
 | Firm, portfolio and deals | `company/identify`, `company/search` filtered on `funding.investors`, `company/enrich` reading `funding.milestones` and `investors_detailed` | 0.2 + ~0.4 per result + 2–4 each |
 | Founder discovery | `person/search` (e.g. `education.schools.school` + founder titles); exact values from autocomplete (free) | 0.03 + premium fields, per result |
-| Company discovery | `company/search` (semantic mode for concepts like "deeptech") | 0.03 + premium fields, per result |
+| Company discovery | `company/search` in hybrid mode (keyword + embedding), ranked by a plain description of the wanted companies plus the query's concept words; `basic_info.year_founded` startup gate | 0.03 + premium fields, per result |
 | Company facts | `company/enrich`: funding, headcount (over time), hiring, people.founders, news, web_traffic, competitors | 2–4 |
 | Founder facts | `person/enrich`: dated career history, education | 1–9 |
 | Grants, news, public decks | `web/search/live` (sources `news`/`web`, `site:`, `start_date`), `web/enrich/live` (fetch) | 1 per page |
 | Partner's own deals | `social_post/search` (the partner as author, investment keywords) | 0.5 per post |
 | Tracking | `watch/company` entity watcher (default 30-day refresh) + test notification | 5 per changed company |
 
-**Budget:** onboarding ≈ 60–110 credits; a search ≈ 130 credits for about 30
+**Search relevance:** the query's own terms are the only filters. A ranking
+description (written from the query, with detail from the thesis) orders results
+but never removes one. Up to 100 search rows are rated for fit (0–3, with a quote
+from the description) before anything is enriched. A concept stated in the query
+excludes companies below the minimum fit; the ranking description only reorders.
+Only the top `SEARCH_ENRICH_CAP` (default 15) are enriched.
+
+**Budget:** onboarding ≈ 60–110 credits; a search ≈ 65 credits for 15 enriched
 candidates. Every run has a credit limit. Responses are cached by request hash, so
 a retry never pays twice.
 

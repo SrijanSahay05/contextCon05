@@ -29,6 +29,16 @@ class Settings(BaseSettings):
     run_credit_ceiling: float = 300
     run_deadline_minutes: int = 20
 
+    # search relevance
+    # Crustdata ranking mode: hybrid (keyword + embedding), lexical or semantic
+    search_mode: str = "hybrid"
+    # startup gate applied when the query sets no founded year; 0 turns it off
+    search_founded_from_year: int = 2016
+    # candidates enriched per search (2 credits each), taken after the fit rerank
+    search_enrich_cap: int = 15
+    # minimum 0-3 fit for a company to pass an explicit concept in the query
+    search_concept_min_fit: int = 2
+
     webhook_secret: str = ""
 
     # Gmail (stretch)

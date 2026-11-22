@@ -85,16 +85,25 @@ class ParsedQuery(BaseModel):
     grants: GrantFilter | None = Field(
         default=None, description="Set when the query asks for government or other grants."
     )
+    ranking_description: str | None = Field(
+        default=None,
+        description="One or two plain sentences describing the companies this query is "
+                    "after: what they build, for whom, and where. Used only to rank "
+                    "results, never to exclude them. The thesis may add detail here.",
+    )
 
 
 SYSTEM = """You split a venture investor's search query into structured terms.
-Rules:
+Rules for every field except `ranking_description`:
 - Only use words that are in the query. Never add schools, industries, countries,
   programmes or numbers that the query does not state, even if the thesis suggests them.
 - Every `phrase` must be copied verbatim from the query.
 - Keep ambiguous or informal terms as written (e.g. 'BITSian'); do not expand or guess.
 - Leave a list empty when the query says nothing about it.
-The fund's thesis is context only; it never adds terms."""
+The fund's thesis is context only; it never adds terms.
+`ranking_description` is different: write it in your own words from the query, adding
+detail from the thesis where the query is vague (e.g. which customers or sub-sector). It
+only orders results, so it must describe what the companies do, not invent constraints."""
 
 # (route, crustdata field, op label) per categorical ParsedQuery list
 PERSON = "person"
@@ -183,6 +192,8 @@ def parse_query(
         since = months_before(as_of or date.today(), window.months)
         spec.funding.append(Condition(field="funding.last_fundraise_date", op=">",
                                       value=since.isoformat(), display=window.phrase))
+    if parsed.ranking_description and parsed.ranking_description.strip():
+        spec.ranking_query = parsed.ranking_description.strip()
     if parsed.grants:
         grants = parsed.grants
         spec.grants = grants.model_copy(

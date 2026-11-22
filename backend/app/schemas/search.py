@@ -79,6 +79,11 @@ class FilterSpec(BaseModel):
     funding: list[Condition] = Field(default_factory=list)
     grants: GrantFilter | None = None
     window_months: int | None = Field(default=None, ge=1)
+    ranking_query: str | None = Field(
+        default=None,
+        description="Plain description of the companies wanted. It only orders results and "
+                    "rates fit; it never excludes a company.",
+    )
 
     model_config = examples(EX_FILTERS)
 

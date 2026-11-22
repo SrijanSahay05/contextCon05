@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.integrations.llm import FakeLLM
 from app.models.enums import CandidateStatus, RunKind, SearchStatus, StepStatus
 from app.models.evidence import Fact
@@ -90,3 +91,30 @@ def test_credit_ceiling_holds_the_run(db: Session, fake: FakeWorld) -> None:
     assert step.name == "discover" and step.status == StepStatus.failed
     assert len(fake.seen) == 1  # stopped before the second paid call
     assert db.scalars(select(Candidate)).all() == []
+
+
+def test_fit_runs_before_enrich_and_only_the_cap_is_enriched(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    world = FakeWorld()
+    llm = FakeLLM({"ratings": [
+        {"index": 0, "fit": 1, "quote": "battery management chips", "reason": "loose"},
+        {"index": 1, "fit": 3, "quote": "UPI payments infrastructure", "reason": "core"},
+    ]})
+    monkeypatch.setattr(search_job, "clients_for_run", lambda run_id: clients.clients_for_run(
+        run_id, transport=httpx.MockTransport(world), llm_transport=llm))
+    monkeypatch.setattr(get_settings(), "search_enrich_cap", 1)
+    search = seed(db, companies=[INDUSTRY], ranking_query="UPI payments for small merchants")
+    row = run(db, search)
+
+    steps = {s.name: s for s in db.scalars(select(RunStep).where(RunStep.run_id == row.id))}
+    assert [s.name for s in sorted(steps.values(), key=lambda s: s.seq)] == [
+        "discover", "fit", "enrich", "grants", "candidates", "score"]
+    # GridDeep was found first, but Paysetu fits better, so only Paysetu is paid for
+    [enrich_body] = world.paths("/company/enrich")
+    assert enrich_body["crustdata_company_ids"] == [700101]
+    assert steps["enrich"].output["fit_facts"] == 1
+    [candidate] = candidates_for_search(db, search.id)
+    [fact] = db.scalars(select(Fact).where(Fact.predicate == "concept_match")).all()
+    assert fact.subject_id == candidate.company_id
+    assert fact.value["quote"] == "UPI payments infrastructure"

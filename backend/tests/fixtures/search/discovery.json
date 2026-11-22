@@ -18,8 +18,10 @@
   },
   "company_route": {
     "companies": [
-      {"crustdata_company_id": 700103, "basic_info": {"name": "GridDeep"}},
-      {"crustdata_company_id": 700101, "basic_info": {"name": "Paysetu"}}
+      {"crustdata_company_id": 700103, "basic_info": {"name": "GridDeep",
+        "description": "GridDeep builds battery management chips for grid-scale storage."}},
+      {"crustdata_company_id": 700101, "basic_info": {"name": "Paysetu",
+        "description": "Paysetu runs UPI payments infrastructure for small merchants."}}
     ],
     "next_cursor": null,
     "total_count": 2

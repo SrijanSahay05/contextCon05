@@ -23,7 +23,10 @@ from app.integrations.recorder import Recorder, request_hash
 from app.models.enums import Provider, SourceKind, UnitType
 
 API_VERSION = "2025-11-01"
-RATE_LIMITS = {"search": 30, "enrich": 15, "web": 10, "watch": 10}
+# Requests/minute per endpoint, a little under this key's limits from GET /account/endpoints
+# (2026-11-22): search, enrich and identify are 5/min, autocomplete 300, social posts 100.
+RATE_LIMITS = {"search": 5, "enrich": 5, "autocomplete": 250, "posts": 90, "web": 10,
+               "watch": 10}
 MAX_429_TRIES = 5
 BACKOFF_5XX = (1.0, 2.0, 4.0)
 MAX_RESET_WAIT = 30.0
@@ -208,7 +211,7 @@ class CrustdataClient(CrustdataBase):
                           estimate=_matched(0.2))
 
     def company_autocomplete(self, body: dict[str, Any]) -> CrustResult:
-        return self._call("POST", "/company/search/autocomplete", body, bucket="search",
+        return self._call("POST", "/company/search/autocomplete", body, bucket="autocomplete",
                           estimate=_free)
 
     def person_search(self, body: dict[str, Any]) -> CrustResult:
@@ -220,7 +223,7 @@ class CrustdataClient(CrustdataBase):
                           estimate=_matched(1.0))
 
     def person_autocomplete(self, body: dict[str, Any]) -> CrustResult:
-        return self._call("POST", "/person/search/autocomplete", body, bucket="search",
+        return self._call("POST", "/person/search/autocomplete", body, bucket="autocomplete",
                           estimate=_free)
 
     def job_search(self, body: dict[str, Any]) -> CrustResult:
@@ -228,7 +231,7 @@ class CrustdataClient(CrustdataBase):
                           estimate=_count("job_listings", 0.03))
 
     def social_post_search(self, body: dict[str, Any]) -> CrustResult:
-        return self._call("POST", "/social_post/search", body, bucket="search",
+        return self._call("POST", "/social_post/search", body, bucket="posts",
                           estimate=_count("posts", 0.5))
 
     # Watches are charged per delivered change, not at create/test, so they estimate 0.

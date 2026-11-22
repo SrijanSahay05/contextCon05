@@ -113,3 +113,19 @@ def test_invented_values_are_dropped() -> None:
 def test_months_before_clamps_day() -> None:
     assert months_before(date(2026, 8, 31), 6) == date(2026, 2, 28)
     assert months_before(date(2026, 3, 15), 18) == date(2024, 9, 15)
+
+
+def test_ranking_description_ranks_but_adds_no_filters() -> None:
+    reply = {
+        "concepts": [{"phrase": "logistics software"}],
+        "ranking_description": " Software that helps Indian mid-size 3PLs plan line-haul "
+                               "routes and price loads. ",
+    }
+    spec, unresolved = parse_query(
+        make_clients(FakeLLM(reply), FakeAutocomplete()), "logistics software", None)
+    assert spec.ranking_query == (
+        "Software that helps Indian mid-size 3PLs plan line-haul routes and price loads.")
+    # the thesis-flavoured detail stays out of the filters: only the query's concept is one
+    assert [(c.field, c.value) for c in spec.companies] == [
+        ("search.query", "logistics software")]
+    assert spec.people == [] and spec.funding == [] and unresolved == []

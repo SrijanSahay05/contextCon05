@@ -235,21 +235,28 @@ def test_request_hash_ignores_key_order() -> None:
     assert request_hash("/person/search", a) != request_hash("/company/search", a)
 
 
-def test_rate_limiter_delays_31st_search_call_in_a_minute() -> None:
+def test_rate_limiter_delays_6th_search_call_in_a_minute() -> None:
     client, _, time = make(lambda _: replay("crustdata/company_search"))
-    for i in range(30):
+    for i in range(5):
         client.company_search({"page": i})
     assert time.sleeps == []
 
-    client.company_search({"page": 30})
+    client.company_search({"page": 5})
     assert time.sleeps == [60.0]
 
 
-def test_enrich_limit_is_15_per_minute() -> None:
+def test_enrich_limit_is_5_per_minute() -> None:
     client, _, time = make(lambda _: replay("crustdata/company_enrich"))
-    for i in range(16):
+    for i in range(6):
         client.company_enrich({"crustdata_company_ids": [i]})
     assert time.sleeps == [60.0]
+
+
+def test_autocomplete_is_not_held_to_the_search_limit() -> None:
+    client, _, time = make(lambda _: replay("crustdata/company_autocomplete"))
+    for i in range(30):
+        client.company_autocomplete({"field": "x", "query": f"q{i}"})
+    assert time.sleeps == []
 
 
 def test_endpoint_paths_and_watch_calls() -> None:
