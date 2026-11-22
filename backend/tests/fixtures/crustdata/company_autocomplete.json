@@ -1,0 +1,25 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/company/search/autocomplete",
+  "request": {
+    "field": "basic_info.industries",
+    "query": "tech",
+    "limit": 5
+  },
+  "headers": {
+    "x-credits-used": "0"
+  },
+  "response": {
+    "suggestions": [
+      {
+        "value": "Technology, Information and Media"
+      },
+      {
+        "value": "Technology, Information and Internet"
+      },
+      {
+        "value": "Information Technology & Services"
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/web/enrich/live",
+  "request": {
+    "urls": [
+      "https://example.com/lumen-ledger-120m"
+    ],
+    "human_mode": false
+  },
+  "headers": {
+    "x-credits-used": "1"
+  },
+  "response": [
+    {
+      "success": true,
+      "url": "https://example.com/lumen-ledger-120m",
+      "timestamp": 1775193366,
+      "title": "Lumen Ledger raises $120M from Accel-KKR",
+      "content": "<html><head><title>Lumen Ledger raises $120M from Accel-KKR</title></head><body><p>Lumen Ledger raised a “$120 million growth round” led by Accel-KKR, CEO Ananya Rao said.</p></body></html>"
+    }
+  ]
+}

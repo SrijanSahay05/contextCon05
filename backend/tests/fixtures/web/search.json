@@ -1,0 +1,37 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/web/search/live",
+  "request": {
+    "query": "Lumen Ledger funding",
+    "page": 1
+  },
+  "headers": {
+    "x-credits-used": "1"
+  },
+  "response": {
+    "success": true,
+    "query": "Lumen Ledger funding",
+    "timestamp": 1775195367446,
+    "results": [
+      {
+        "source": "web",
+        "title": "Lumen Ledger raises $120M from Accel-KKR",
+        "url": "https://example.com/lumen-ledger-120m",
+        "snippet": "Lumen Ledger, the accounting automation startup, raised $120M led by Accel-KKR.",
+        "position": 1
+      },
+      {
+        "source": "web",
+        "title": "Lumen Ledger | LinkedIn",
+        "url": "https://www.linkedin.com/company/lumenledger",
+        "snippet": "Accounting automation for mid-market finance teams.",
+        "position": 2
+      }
+    ],
+    "metadata": {
+      "total_results": 2,
+      "failed_pages": [],
+      "empty_pages": []
+    }
+  }
+}

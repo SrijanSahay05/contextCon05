@@ -1,0 +1,47 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/person/search",
+  "request": {
+    "filters": {
+      "op": "and",
+      "conditions": [
+        {
+          "field": "experience.employment_details.current.title",
+          "type": "(.)",
+          "value": "founder"
+        },
+        {
+          "field": "education.schools.school",
+          "type": "(.)",
+          "value": "BITS Pilani"
+        }
+      ]
+    },
+    "limit": 1
+  },
+  "headers": {
+    "x-credits-used": "0.23"
+  },
+  "response": {
+    "profiles": [
+      {
+        "crustdata_person_id": 880001,
+        "basic_profile": {
+          "name": "Ananya Rao"
+        },
+        "experience": {
+          "employment_details": {
+            "current": [
+              {
+                "title": "Co-founder & CEO",
+                "name": "Lumen Ledger"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "next_cursor": "H4sIACIdzWkC...",
+    "total_count": 1
+  }
+}

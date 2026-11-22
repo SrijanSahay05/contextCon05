@@ -1,0 +1,56 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/job/search",
+  "request": {
+    "filters": {
+      "op": "and",
+      "conditions": [
+        {
+          "field": "company.basic_info.company_id",
+          "type": "=",
+          "value": 700001
+        }
+      ]
+    },
+    "fields": [
+      "job_details.title",
+      "job_details.url",
+      "metadata.date_added",
+      "location.country"
+    ],
+    "limit": 2
+  },
+  "headers": {
+    "x-credits-used": "0.06"
+  },
+  "response": {
+    "job_listings": [
+      {
+        "job_details": {
+          "title": "Senior Backend Engineer",
+          "url": "https://www.linkedin.com/jobs/view/4436109032"
+        },
+        "location": {
+          "country": "India"
+        },
+        "metadata": {
+          "date_added": "2026-11-01T20:23:42"
+        }
+      },
+      {
+        "job_details": {
+          "title": "Enterprise Account Executive",
+          "url": "https://www.linkedin.com/jobs/view/4435532382"
+        },
+        "location": {
+          "country": "United States"
+        },
+        "metadata": {
+          "date_added": "2026-10-28T08:24:08"
+        }
+      }
+    ],
+    "next_cursor": "H4sIAFUrRmoC_xXMwQ7CIAwA0F8hnHcopYXirxiz1DKyg5G4sYMx_rvz_vI",
+    "total_count": 37
+  }
+}
