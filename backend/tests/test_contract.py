@@ -93,7 +93,8 @@ def test_investor_header_required_exactly_where_expected() -> None:
 
 
 def test_stub_returns_501_envelope() -> None:
-    response = client.get(f"/candidates/{ANY_ID}", headers=INVESTOR)
+    # an endpoint that is still a stub (candidate detail is implemented now)
+    response = client.post(f"/candidates/{ANY_ID}/recheck", headers=INVESTOR)
 
     assert response.status_code == 501
     assert response.json()["error"]["code"] == "not_implemented"

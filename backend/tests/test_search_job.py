@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.integrations.llm import FakeLLM
-from app.models.enums import CandidateStatus, RunKind, StepStatus
+from app.models.enums import CandidateStatus, RunKind, SearchStatus, StepStatus
 from app.models.evidence import Fact
 from app.models.identity import Investor
 from app.models.runs import Run, RunStep
@@ -60,7 +60,11 @@ def test_handler_creates_candidates_with_grants(db: Session, fake: FakeWorld) ->
     assert candidate.status == CandidateStatus.new
     steps = {s.name: s for s in db.scalars(select(RunStep).where(RunStep.run_id == row.id))}
     assert [s.name for s in sorted(steps.values(), key=lambda s: s.seq)] == [
-        "discover", "enrich", "grants", "candidates"]
+        "discover", "enrich", "grants", "candidates", "score"]
+    assert steps["score"].output == {"scored": 1}
+    assert candidate.score is not None and candidate.suggested_action is not None
+    db.refresh(search)
+    assert search.status == SearchStatus.done
     assert steps["discover"].output["candidates"][0]["found_by"] == ["people", "company"]
     assert steps["candidates"].output == {"candidate_ids": [str(candidate.id)], "count": 1}
     assert len(steps["grants"].output["verified"]) == 1

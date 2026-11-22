@@ -11,12 +11,14 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.models.entities import Company
+from app.models.enums import SearchStatus
 from app.models.search import Search
 from app.repositories.candidates import get_or_create_candidate
 from app.schemas.search import FilterSpec
 from app.services.clients import clients_for_run
 from app.services.jobs.registry import register
 from app.services.jobs.steps import StepRunner, ensure_budget
+from app.services.scoring.service import score_search
 from app.services.search.discovery import discover, enrich, months_before
 from app.services.search.grants import check_grants
 
@@ -66,3 +68,14 @@ def search_run(db: Session, runner: StepRunner, payload: dict[str, Any]) -> None
         return {"candidate_ids": ids, "count": len(ids)}
 
     runner.step("candidates", run_candidates)
+
+    def run_score() -> dict[str, Any]:
+        # scoring reads only stored facts: no paid calls, so no budget check here
+        scored = score_search(db, search_id)
+        search = db.get(Search, search_id)
+        if search is not None:
+            search.status = SearchStatus.done
+        db.commit()
+        return {"scored": len(scored)}
+
+    runner.step("score", run_score)
