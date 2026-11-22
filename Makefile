@@ -12,7 +12,7 @@ install:
 	$(UV) sync
 	cd $(FRONTEND_DIR) && pnpm install
 
-# Backend + Postgres + Mongo in Docker; run the frontend with `make front`.
+# Backend + Postgres + Redis in Docker; run the frontend with `make front`.
 dev:
 	$(COMPOSE) up --build backend
 
@@ -22,11 +22,11 @@ front:
 dev-down:
 	$(COMPOSE) down
 
-# Full containerized stack (frontend + backend + db + mongo).
+# Full containerized stack (frontend + backend + db + redis).
 up:
 	$(COMPOSE) up --build -d
 
-# Backend tests need Postgres + Mongo running (`make dev`).
+# Backend tests need Postgres + Redis running (`make dev`).
 test:
 	$(UV) run pytest
 	cd $(FRONTEND_DIR) && pnpm test
