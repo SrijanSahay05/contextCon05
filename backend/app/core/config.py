@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     run_deadline_minutes: int = 20
 
     webhook_secret: str = ""
+    # public base URL Crustdata calls back on (e.g. an ngrok/Cloudflare tunnel in dev)
+    public_base_url: str = ""
 
     # Gmail (stretch)
     google_client_id: str = ""

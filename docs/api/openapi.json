@@ -5352,6 +5352,16 @@
             },
             "description": "Not found"
           },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "File is over the size cap"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -6858,7 +6868,7 @@
     },
     "/outreach/{outreach_id}": {
       "put": {
-        "description": "Edit a `draft` message (also the DD request draft). 409 once approved.",
+        "description": "Edit a message (also the DD request draft). Editing an `approved` message sends it\nback to `draft`, so the changed text must be approved again. 409 once sent.",
         "operationId": "edit_outreach_outreach__outreach_id__put",
         "parameters": [
           {

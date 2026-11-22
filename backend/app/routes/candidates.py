@@ -6,12 +6,14 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.deps import InvestorId, current_investor_id
-from app.errors import AUTH_RESPONSES, ErrorEnvelope, not_implemented
+from app.errors import AUTH_RESPONSES, ErrorEnvelope
 from app.models.enums import SnapshotTrigger
 from app.repositories import scores
 from app.schemas.candidate import CandidateOut, StatusChange
 from app.schemas.common import RunAccepted
+from app.services.actions import status as status_service
 from app.services.scoring.service import score_candidate
+from app.services.watch.recheck_job import daily_key, start_recheck
 
 router = APIRouter(
     prefix="/candidates", tags=["candidates"], responses=AUTH_RESPONSES,
@@ -32,13 +34,17 @@ def get_candidate(candidate_id: UUID, investor_id: InvestorId, db: Db) -> Candid
     response_model=CandidateOut,
     responses={409: {"model": ErrorEnvelope, "description": "Transition not allowed"}},
 )
-def change_status(candidate_id: UUID, body: StatusChange) -> CandidateOut:
+def change_status(
+    candidate_id: UUID, body: StatusChange, investor_id: InvestorId, db: Db
+) -> CandidateOut:
     """Move the candidate. Allowed: `new → shortlist | watch | pass`,
     `shortlist → watch | pass`, `in_dd → invest | watch | pass`, `watch → shortlist | pass`,
     `pass → watch`. `in_dd` is entered with `POST /candidates/{id}/dd`, not here.
     Anything else is 409 `not_allowed`. `invest` starts memo generation; `watch` and
     `pass` start a Crustdata watch."""
-    not_implemented()
+    candidate = status_service.change_status(db, investor_id, candidate_id, body)
+    db.commit()
+    return scores.candidate_out(db, candidate)
 
 
 @router.post("/{candidate_id}/rescore", response_model=CandidateOut)
@@ -54,6 +60,7 @@ def rescore(candidate_id: UUID, investor_id: InvestorId, db: Db) -> CandidateOut
 @router.post(
     "/{candidate_id}/recheck", response_model=RunAccepted, status_code=status.HTTP_202_ACCEPTED
 )
-def recheck(candidate_id: UUID) -> RunAccepted:
+def recheck(candidate_id: UUID, investor_id: InvestorId, db: Db) -> RunAccepted:
     """Fetch fresh data now ("re-check now"), then re-score. Spends credits."""
-    not_implemented()
+    candidate = scores.get_owned(db, candidate_id, investor_id)
+    return start_recheck(db, candidate, investor_id, daily_key(candidate.id))
