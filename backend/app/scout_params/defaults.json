@@ -1,0 +1,56 @@
+{
+  "thesis": {
+    "business_models": ["b2b_saas"],
+    "hq_countries": ["IND"],
+    "include_india_built_us_hq": true,
+    "headcount_min": 5,
+    "relationship": "investment"
+  },
+  "signals": {
+    "growth_6m_min": 0.5,
+    "growth_min_base_headcount": 5,
+    "months_since_round_min": 12,
+    "min_coverage": 0.6
+  },
+  "ranking": {
+    "lens": "pre_round",
+    "panel_top_n": 5,
+    "inference": {
+      "alpha": 0.6,
+      "beta": 0.4,
+      "min_weight": 0.0,
+      "max_weight": 35.0,
+      "max_delta": 15.0
+    },
+    "kills": ["headcount_drop", "founder_exit", "claim_mismatch"],
+    "kill_thresholds": {
+      "headcount_drop_pct": 0.3,
+      "claim_mismatch_ratio": 0.5
+    }
+  },
+  "founders": {
+    "require_technical_cofounder": false,
+    "repeat_founder": "any",
+    "min_domain_years": 0,
+    "require_prior_employer_hypergrowth": false,
+    "prior_employer_growth_multiple": 2.0,
+    "require_cofounder_overlap": false
+  },
+  "decision": {
+    "meet_min_score": 75,
+    "meet_min_confidence": 0.7,
+    "watch_min_score": 50
+  },
+  "run": {
+    "top_n": 10,
+    "credit_budget": 130,
+    "profiling_budget": 30,
+    "time_limit_s": 600,
+    "post_window_months": 12,
+    "portfolio_sample_max": 25,
+    "max_staleness_days": 90,
+    "show_cannot_verify": true,
+    "save_profile": false,
+    "never_pad": true
+  }
+}

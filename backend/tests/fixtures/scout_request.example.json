@@ -1,0 +1,355 @@
+{
+  "schema_version": "1.0",
+  "client_id": "default",
+  "investor": {
+    "name": "Example Investor",
+    "firm": "Example Ventures",
+    "linkedin_url": "https://www.linkedin.com/in/example-investor",
+    "consent": true,
+    "hint": null
+  },
+  "resolved": {
+    "person_id": "cd_person_123",
+    "firm_company_id": "cd_company_456",
+    "name_matches_profile": true,
+    "firm_matches_profile": true,
+    "confirmed_by_user": true
+  },
+  "profile": {
+    "post_themes": [
+      {
+        "theme": "logistics SaaS",
+        "count": 9,
+        "evidence": [
+          {
+            "kind": "post",
+            "ref": "https://www.linkedin.com/posts/example-1",
+            "record_date": "2026-09-14",
+            "note": null
+          }
+        ]
+      }
+    ],
+    "posts_analysed": 41,
+    "portfolio": {
+      "sampled": 25,
+      "company_ids": [],
+      "stage_mix": {
+        "seed": 0.56,
+        "series_a": 0.36
+      },
+      "sector_mix": {
+        "logistics": 0.4,
+        "fintech": 0.2
+      },
+      "hq_mix": {
+        "IND": 0.88,
+        "USA": 0.12
+      },
+      "tech_cofounder_share": 0.72,
+      "repeat_founder_share": 0.4,
+      "median_headcount_at_round": 22.0,
+      "median_growth_6m_before_round": null
+    },
+    "cold_start": false,
+    "cold_start_reason": null
+  },
+  "thesis_text": null,
+  "thesis": {
+    "industries": [
+      "Transportation, Logistics, Supply Chain and Storage"
+    ],
+    "subsectors": [
+      "TMS/WMS SaaS",
+      "fleet telematics"
+    ],
+    "keywords": [
+      "freight visibility"
+    ],
+    "business_models": [
+      "b2b_saas"
+    ],
+    "hq_countries": [
+      "IND"
+    ],
+    "include_india_built_us_hq": true,
+    "founded_from": 2022,
+    "founded_to": null,
+    "stages": [
+      "seed",
+      "series_a"
+    ],
+    "headcount_min": 5,
+    "headcount_max": 200,
+    "relationship": "investment",
+    "exclude_domains": [],
+    "exclude_company_ids": [],
+    "exclude_portfolio_competitors": false,
+    "field_origins": {
+      "subsectors": "inferred",
+      "stages": "inferred",
+      "founded_from": "inferred"
+    }
+  },
+  "signals": {
+    "growth_6m_min": 0.5,
+    "growth_min_base_headcount": 5,
+    "months_since_round_min": 12,
+    "total_raised_usd_min": null,
+    "total_raised_usd_max": null,
+    "min_coverage": 0.6
+  },
+  "ranking": {
+    "lens": "founder_first",
+    "weights": [
+      {
+        "signal": "repeat_founder",
+        "value": 7.16,
+        "base": 7.94,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "prior_employer_hypergrowth",
+        "value": 10.74,
+        "base": 11.93,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "domain_years",
+        "value": 8.6,
+        "base": 9.52,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "technical_cofounder",
+        "value": 15.1,
+        "base": 9.52,
+        "origin": "inferred",
+        "locked": false,
+        "evidence": [
+          {
+            "kind": "portfolio_stat",
+            "ref": "portfolio:tech_cofounder_share",
+            "record_date": null,
+            "note": null
+          }
+        ],
+        "reason": "72% of portfolio had a technical co-founder vs 45% of cohort"
+      },
+      {
+        "signal": "cofounder_overlap",
+        "value": 5.73,
+        "base": 6.35,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "promotion_velocity",
+        "value": 4.3,
+        "base": 4.76,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "headcount_growth_3m",
+        "value": 2.73,
+        "base": 3.03,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "headcount_growth_6m",
+        "value": 8.38,
+        "base": 5.68,
+        "origin": "inferred",
+        "locked": false,
+        "evidence": [
+          {
+            "kind": "post",
+            "ref": "https://www.linkedin.com/posts/example-1",
+            "record_date": null,
+            "note": null
+          }
+        ],
+        "reason": "9 of 41 posts mention scaling teams"
+      },
+      {
+        "signal": "headcount_growth_12m",
+        "value": 2.73,
+        "base": 3.03,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "growth_acceleration",
+        "value": 3.42,
+        "base": 3.79,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "engineering_share",
+        "value": 2.05,
+        "base": 2.27,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "open_jobs_trend",
+        "value": 2.39,
+        "base": 2.65,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "web_traffic_trend",
+        "value": 2.05,
+        "base": 2.27,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "low_attrition",
+        "value": 2.05,
+        "base": 2.27,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "runway_pressure",
+        "value": 5.08,
+        "base": 5.62,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "months_since_last_round",
+        "value": 4.06,
+        "base": 4.5,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "raise_cadence",
+        "value": 2.71,
+        "base": 3.0,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "no_institutional_round",
+        "value": 1.69,
+        "base": 1.88,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "competitive_density",
+        "value": 3.01,
+        "base": 3.33,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "news_momentum",
+        "value": 2.11,
+        "base": 2.33,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      },
+      {
+        "signal": "strategic_fit",
+        "value": 3.91,
+        "base": 4.33,
+        "origin": "lens_default",
+        "locked": false,
+        "evidence": [],
+        "reason": null
+      }
+    ],
+    "inference": {
+      "alpha": 0.6,
+      "beta": 0.4,
+      "min_weight": 0.0,
+      "max_weight": 35.0,
+      "max_delta": 15.0
+    },
+    "panel_top_n": 5,
+    "kills": [
+      "headcount_drop",
+      "founder_exit",
+      "claim_mismatch"
+    ],
+    "kill_thresholds": {
+      "headcount_drop_pct": 0.3,
+      "claim_mismatch_ratio": 0.5
+    }
+  },
+  "founders": {
+    "require_technical_cofounder": false,
+    "repeat_founder": "any",
+    "min_domain_years": 0,
+    "require_prior_employer_hypergrowth": false,
+    "prior_employer_growth_multiple": 2.0,
+    "require_cofounder_overlap": false,
+    "field_origins": {}
+  },
+  "decision": {
+    "meet_min_score": 75.0,
+    "meet_min_confidence": 0.7,
+    "watch_min_score": 50.0
+  },
+  "run": {
+    "top_n": 10,
+    "credit_budget": 130.0,
+    "profiling_budget": 30.0,
+    "llm_budget_inr": null,
+    "time_limit_s": 600,
+    "as_of": null,
+    "post_window_months": 12,
+    "portfolio_sample_max": 25,
+    "max_staleness_days": 90,
+    "show_cannot_verify": true,
+    "save_profile": false,
+    "never_pad": true
+  }
+}
