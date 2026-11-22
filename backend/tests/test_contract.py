@@ -165,4 +165,5 @@ def test_upload_is_multipart() -> None:
         data={"kind": "deck"},
     )
 
-    assert response.status_code == 501
+    # multipart accepted (a bad body would be 422); the random candidate doesn't exist
+    assert response.status_code == 404
