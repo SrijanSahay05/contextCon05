@@ -83,3 +83,27 @@ def test_following_the_suggestion_is_not_an_override(client: TestClient, db: Ses
 
     assert response.status_code == 200 and response.json()["override"] is None
     assert len(response.json()["score_history"]) == 1
+
+
+def test_watch_and_pass_start_local_tracking_and_settle_events(
+    client: TestClient, db: Session
+) -> None:
+    from app.models.actions import Watch, WatchEvent
+    from app.models.enums import WatchEventStatus, WatchReason
+
+    investor, candidate, _, _ = _setup(db)
+    db.commit()
+    headers = {"X-Investor-Id": str(investor.id)}
+    assert client.post(f"/candidates/{candidate.id}/status", json={"status": "watch"},
+                       headers=headers).status_code == 200
+    # no PUBLIC_BASE_URL in tests: a local-only watch, and no Crustdata call
+    [watch] = db.scalars(select(Watch).where(Watch.candidate_id == candidate.id)).all()
+    assert watch.reason == WatchReason.watch and watch.crustdata_watch_id is None
+
+    event = WatchEvent(watch_id=watch.id, changes=[])
+    db.add(event)
+    db.commit()
+    assert client.post(f"/candidates/{candidate.id}/status", json={"status": "shortlist"},
+                       headers=headers).status_code == 200
+    db.refresh(event)
+    assert event.status == WatchEventStatus.acted

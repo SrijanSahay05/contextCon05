@@ -9,3 +9,4 @@ from app.services.search import search_job  # noqa: E402,F401
 from app.services.dd import ingest_job  # noqa: E402,F401
 from app.services.actions import memo_job  # noqa: E402,F401
 from app.services.dd import verify_job  # noqa: E402,F401
+from app.services.watch import recheck_job  # noqa: E402,F401

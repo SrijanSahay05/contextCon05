@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.deps import InvestorId, current_investor_id
-from app.errors import AUTH_RESPONSES, ErrorEnvelope, not_implemented
+from app.errors import AUTH_RESPONSES, ErrorEnvelope
 from app.models.enums import SnapshotTrigger
 from app.repositories import scores
 from app.schemas.candidate import CandidateOut, StatusChange

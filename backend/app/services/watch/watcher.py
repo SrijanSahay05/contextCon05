@@ -56,7 +56,8 @@ def ensure_watch(
         return mine
     shared = repo.find_watch(db, candidate.company_id, reason)
     crust_id = shared.crustdata_watch_id if shared else None
-    if crust_id is None:
+    # no public URL (local dev): a local-only watch, still recheckable by hand
+    if crust_id is None and public_base_url:
         company = db.get_one(Company, candidate.company_id)
         result = clients.crustdata.watch_company_create(
             watch_request(company.crustdata_company_id, public_base_url))

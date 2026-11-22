@@ -93,8 +93,8 @@ def test_investor_header_required_exactly_where_expected() -> None:
 
 
 def test_stub_returns_501_envelope() -> None:
-    # an endpoint that is still a stub (candidate detail is implemented now)
-    response = client.post(f"/candidates/{ANY_ID}/recheck", headers=INVESTOR)
+    # an endpoint that is still a stub (Gmail is not built yet)
+    response = client.get("/integrations/gmail", headers=INVESTOR)
 
     assert response.status_code == 501
     assert response.json()["error"]["code"] == "not_implemented"
@@ -102,8 +102,8 @@ def test_stub_returns_501_envelope() -> None:
 
 
 def test_public_stub_needs_no_header() -> None:
-    # a public route that is still a stub (onboard is implemented and would call Crustdata)
-    response = client.post("/webhooks/crustdata/watch?token=t", json={"event": "test"})
+    # a public route that is still a stub (Gmail's OAuth callback)
+    response = client.get("/integrations/gmail/callback?code=c&state=s")
 
     assert response.status_code == 501
 
