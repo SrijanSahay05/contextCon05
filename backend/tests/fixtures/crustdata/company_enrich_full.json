@@ -1,0 +1,95 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/company/enrich",
+  "request": {
+    "crustdata_company_ids": [700002],
+    "fields": ["basic_info", "headcount", "funding", "locations", "taxonomy", "people", "news", "web_traffic", "competitors"]
+  },
+  "headers": {
+    "x-credits-used": "5"
+  },
+  "response": [
+    {
+      "matched_on": "700002",
+      "match_type": "crustdata_company_id",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 700002,
+            "updated_at": "2026-11-15T08:00:00Z",
+            "basic_info": {
+              "crustdata_company_id": 700002,
+              "name": "Quillwave Robotics",
+              "primary_domain": "quillwave.ai",
+              "description": "Autonomous inspection drones for power lines.",
+              "year_founded": 2023
+            },
+            "headcount": {
+              "total": 18,
+              "by_role_absolute": {"Engineering": 12, "Sales": 3, "Operations": 3},
+              "timeseries": [
+                {"date": "2026-05-01", "employee_count": 11},
+                {"date": "not a date", "employee_count": 15},
+                {"date": "2026-11-01", "employee_count": 18}
+              ]
+            },
+            "funding": {
+              "total_investment_usd": 2500000,
+              "last_round_type": "seed",
+              "last_fundraise_date": "2025-09-12",
+              "milestones": [
+                {
+                  "funding_date": "2025-09-12",
+                  "amount_usd": 2500000,
+                  "round_type": "seed",
+                  "investors": "Kestrel Ventures, Angel Collective",
+                  "lead_investors": "Kestrel Ventures"
+                }
+              ],
+              "investors": ["Angel Collective", "Kestrel Ventures"]
+            },
+            "locations": {
+              "country": "India",
+              "state": "Karnataka",
+              "headquarters": "Bengaluru, Karnataka, India"
+            },
+            "taxonomy": {
+              "professional_network_industry": "Robotics Engineering",
+              "professional_network_industries": ["Robotics Engineering", "Utilities"],
+              "categories": ["drones"]
+            },
+            "people": {
+              "founders": [
+                {
+                  "crustdata_person_id": 880101,
+                  "basic_profile": {"name": "Ravi Menon", "current_title": "Co-founder & CEO"}
+                },
+                {
+                  "crustdata_person_id": 880102,
+                  "basic_profile": {"name": "Meera Iyer", "current_title": "Co-founder & CTO"}
+                }
+              ]
+            },
+            "news": [
+              {
+                "source": "google_news",
+                "article_url": "https://news.example.com/quillwave-seed",
+                "article_title": "Quillwave raises seed round",
+                "article_publish_date": "2025-09-15"
+              }
+            ],
+            "web_traffic": {
+              "domain_traffic": {
+                "quillwave.ai": {"domain": "quillwave.ai", "monthly_visitors": 4200}
+              }
+            },
+            "competitors": {
+              "all_domains": ["skyline-inspect.com", "gridhawk.io"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
