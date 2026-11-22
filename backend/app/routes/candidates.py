@@ -11,6 +11,7 @@ from app.models.enums import SnapshotTrigger
 from app.repositories import scores
 from app.schemas.candidate import CandidateOut, StatusChange
 from app.schemas.common import RunAccepted
+from app.services.actions import status as status_service
 from app.services.scoring.service import score_candidate
 
 router = APIRouter(
@@ -32,13 +33,17 @@ def get_candidate(candidate_id: UUID, investor_id: InvestorId, db: Db) -> Candid
     response_model=CandidateOut,
     responses={409: {"model": ErrorEnvelope, "description": "Transition not allowed"}},
 )
-def change_status(candidate_id: UUID, body: StatusChange) -> CandidateOut:
+def change_status(
+    candidate_id: UUID, body: StatusChange, investor_id: InvestorId, db: Db
+) -> CandidateOut:
     """Move the candidate. Allowed: `new → shortlist | watch | pass`,
     `shortlist → watch | pass`, `in_dd → invest | watch | pass`, `watch → shortlist | pass`,
     `pass → watch`. `in_dd` is entered with `POST /candidates/{id}/dd`, not here.
     Anything else is 409 `not_allowed`. `invest` starts memo generation; `watch` and
     `pass` start a Crustdata watch."""
-    not_implemented()
+    candidate = status_service.change_status(db, investor_id, candidate_id, body)
+    db.commit()
+    return scores.candidate_out(db, candidate)
 
 
 @router.post("/{candidate_id}/rescore", response_model=CandidateOut)
