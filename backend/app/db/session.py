@@ -1,16 +1,32 @@
-from collections.abc import Iterator
+from collections.abc import AsyncIterator
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from fastapi import Request
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
-from app.core.config import get_settings
-
-engine = create_engine(get_settings().database_url, pool_pre_ping=True)
-SessionLocal = sessionmaker(bind=engine, autoflush=False)
+from app.core.config import Settings
 
 
-def get_db() -> Iterator[Session]:
-    """FastAPI dependency yielding a request-scoped session."""
+def create_engine(settings: Settings) -> AsyncEngine:
+    return create_async_engine(settings.database_url, pool_pre_ping=True)
 
-    with SessionLocal() as session:
-        yield session
+
+def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+    return async_sessionmaker(engine, expire_on_commit=False)
+
+
+async def get_db(request: Request) -> AsyncIterator[AsyncSession]:
+    """FastAPI dependency yielding a request-scoped session; commits on success."""
+
+    session_factory: async_sessionmaker[AsyncSession] = request.app.state.db_session_factory
+    async with session_factory() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
