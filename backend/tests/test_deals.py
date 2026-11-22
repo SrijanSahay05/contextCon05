@@ -22,8 +22,14 @@ def test_accel_rounds_count_and_accel_kkr_does_not() -> None:
     assert [(d.round_type, d.flag) for d in drafts] == [("seed", None), ("series_a", None)]
     assert all(d.match_rule == "exact_round_name" for d in drafts)
     assert drafts[0].match_evidence == {
-        "round_investors": "Accel, Angel Collective", "matched_name": "Accel",
+        "round_investors": "Accel, Angel Collective", "matched_name": "Accel", "entry": True,
     }
+
+
+def test_only_the_first_round_is_the_firms_entry() -> None:
+    seed, series_a = deals_from_company(lumen(), {"Accel"}, {"accel"}, ALL_TIME)
+    assert seed.match_evidence["entry"] is True
+    assert series_a.match_evidence["entry"] is False  # a follow-on in a company already backed
 
 
 def test_accel_kkr_alias_only_gets_its_own_round() -> None:

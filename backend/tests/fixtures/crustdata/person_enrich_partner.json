@@ -4,6 +4,10 @@
   "request": {
     "professional_network_profile_urls": [
       "https://www.linkedin.com/in/ananya-rao-accel"
+    ],
+    "fields": [
+      "basic_profile",
+      "experience"
     ]
   },
   "headers": {

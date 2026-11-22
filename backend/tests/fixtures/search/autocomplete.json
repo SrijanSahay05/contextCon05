@@ -1,0 +1,101 @@
+{
+ "_note": "autocomplete replies in the documented shape; the BITS suggestions mirror a live call on 2026-11-22. Any request not listed gets {\"suggestions\": []}.",
+ "replies": [
+  {
+   "endpoint": "/person/search/autocomplete",
+   "request": {
+    "field": "education.schools.school",
+    "query": "Birla Institute of Technology and Science",
+    "limit": 10
+   },
+   "response": {
+    "suggestions": [
+     {
+      "value": "Birla Institute of Technology and Science, Pilani"
+     },
+     {
+      "value": "Birla Institute of Technology and Science, Pilani - Goa Campus"
+     },
+     {
+      "value": "Birla Institute of Technology"
+     },
+     {
+      "value": "Birla Institute of Technology, Mesra"
+     }
+    ]
+   }
+  },
+  {
+   "endpoint": "/person/search/autocomplete",
+   "request": {
+    "field": "education.schools.school",
+    "query": "Hogwarts Poly",
+    "limit": 10
+   },
+   "response": {
+    "suggestions": [
+     {
+      "value": "Hogwarts University"
+     }
+    ]
+   }
+  },
+  {
+   "endpoint": "/company/search/autocomplete",
+   "request": {
+    "field": "locations.country",
+    "query": "India",
+    "limit": 10
+   },
+   "response": {
+    "suggestions": [
+     {
+      "value": "India"
+     },
+     {
+      "value": "British Indian Ocean Territory"
+     }
+    ]
+   }
+  },
+  {
+   "endpoint": "/person/search/autocomplete",
+   "request": {
+    "field": "education.schools.school",
+    "query": "Birla Institute of Technology & Science",
+    "limit": 10
+   },
+   "response": {
+    "suggestions": [
+     {
+      "value": "Birla Institute of Technology & Science, Pilani"
+     }
+    ]
+   }
+  },
+  {
+   "endpoint": "/person/search/autocomplete",
+   "request": {
+    "field": "education.schools.school",
+    "query": "BITS Pilani",
+    "limit": 10
+   },
+   "response": {
+    "suggestions": [
+     {
+      "value": "BITS Pilani, Hyderabad Campus"
+     },
+     {
+      "value": "BITS Pilani"
+     },
+     {
+      "value": "BITS-PILANI"
+     },
+     {
+      "value": "BITS Pilani Dubai"
+     }
+    ]
+   }
+  }
+ ]
+}

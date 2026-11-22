@@ -76,9 +76,13 @@ def test_job_builds_deals_thesis_and_profile(
 
     thesis = db.scalars(select(Thesis)).one()
     assert thesis.status == ReviewStatus.draft and thesis.version == 1
-    assert thesis.deal_count == 2 and thesis.confidence == "low"
+    # two Accel rounds in one company: the seed is the investment, the series A a follow-on
+    assert thesis.deal_count == 1 and thesis.confidence == "low"
     assert str(thesis.window_start) == "2018-12-01"  # widened to 36 months
-    assert {str(d.id) for d in deals} <= {i for p in thesis.points for i in p["deal_ids"]}
+    entries = {str(d.id) for d in deals if d.match_evidence["entry"]}
+    assert entries == {i for p in thesis.points for i in p["deal_ids"]}
+    [stage] = [p for p in thesis.points if p["dimension"] == "stage"]
+    assert stage["value"]["follow_on_rounds"] == 1
     assert thesis.summary
 
     profile = db.scalars(select(ScoringProfile)).one()
@@ -110,3 +114,22 @@ def test_unknown_investor_without_linkedin_skips_partner(
     run_job(db, investor, fund)
     assert not any(path == "/person/enrich" for path, _ in requests)
     assert db.scalars(select(Thesis)).one().fund_id == fund.id
+
+
+def test_partner_country_from_confirmed_identity(db: Session) -> None:
+    from app.models.enums import ExtractedBy, SourceKind, SubjectType
+    from app.models.evidence import Fact, Source
+    from app.services.onboarding.thesis_job import partner_country
+
+    investor = Investor(name="P", crustdata_person_id=7)
+    source = Source(kind=SourceKind.crustdata, endpoint_or_url="/person/enrich")
+    db.add_all([investor, source])
+    db.flush()
+    for person_id, location in ((7, "Bengaluru, Karnataka, India"), (8, "London, UK")):
+        db.add(Fact(subject_type=SubjectType.investor, subject_id=investor.id,
+                    predicate="identity_candidate", source_id=source.id, locator={},
+                    extracted_by=ExtractedBy.rule, as_of=None,
+                    value={"candidate": {"crustdata_person_id": person_id,
+                                         "location": location}}))
+    db.commit()
+    assert partner_country(db, investor.id) == "IND"  # the confirmed person, not a namesake

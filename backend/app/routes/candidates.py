@@ -1,23 +1,30 @@
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
+from sqlalchemy.orm import Session
 
-from app.deps import current_investor_id
+from app.db.session import get_db
+from app.deps import InvestorId, current_investor_id
 from app.errors import AUTH_RESPONSES, ErrorEnvelope, not_implemented
+from app.models.enums import SnapshotTrigger
+from app.repositories import scores
 from app.schemas.candidate import CandidateOut, StatusChange
 from app.schemas.common import RunAccepted
+from app.services.scoring.service import score_candidate
 
 router = APIRouter(
     prefix="/candidates", tags=["candidates"], responses=AUTH_RESPONSES,
     dependencies=[Depends(current_investor_id)],
 )
+Db = Annotated[Session, Depends(get_db)]
 
 
 @router.get("/{candidate_id}", response_model=CandidateOut)
-def get_candidate(candidate_id: UUID) -> CandidateOut:
+def get_candidate(candidate_id: UUID, investor_id: InvestorId, db: Db) -> CandidateOut:
     """Everything for the review screen: company, founders, score breakdown with cited
     facts and claims, signals, questions, suggested action and score history."""
-    not_implemented()
+    return scores.candidate_out(db, scores.get_owned(db, candidate_id, investor_id))
 
 
 @router.post(
@@ -35,9 +42,13 @@ def change_status(candidate_id: UUID, body: StatusChange) -> CandidateOut:
 
 
 @router.post("/{candidate_id}/rescore", response_model=CandidateOut)
-def rescore(candidate_id: UUID) -> CandidateOut:
+def rescore(candidate_id: UUID, investor_id: InvestorId, db: Db) -> CandidateOut:
     """Re-score from the facts and claims already collected (no new data, no credits)."""
-    not_implemented()
+    scores.get_owned(db, candidate_id, investor_id)
+    # a manual re-score picks up profile or thesis edits; new data has its own triggers
+    candidate = score_candidate(db, candidate_id, SnapshotTrigger.profile_change)
+    db.commit()
+    return scores.candidate_out(db, candidate)
 
 
 @router.post(
