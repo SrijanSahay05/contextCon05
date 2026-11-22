@@ -1,0 +1,31 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/company/identify",
+  "request": {
+    "names": [
+      "Accel"
+    ]
+  },
+  "headers": {
+    "x-credits-used": "0.2"
+  },
+  "response": [
+    {
+      "matched_on": "Accel",
+      "match_type": "name",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 500100,
+            "basic_info": {
+              "crustdata_company_id": 500100,
+              "name": "Accel",
+              "primary_domain": "accel.com"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
