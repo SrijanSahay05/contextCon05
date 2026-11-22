@@ -165,6 +165,11 @@ Vite and React. The request path is unchanged: `/api` is proxied to the backend.
   from a Postgres `job` table using `FOR UPDATE SKIP LOCKED`. Jobs are idempotent
   and resume from their saved step.
 - **Progress** reaches the browser over SSE (`GET /runs/{id}/events`). No websockets.
+- **LLM:** the Anthropic API (`claude-sonnet-5-5` for extraction, parsing and the
+  memo; `claude-haiku-5-5` for classification), with structured output through tool
+  use. It's limited to the four jobs in the principles above.
+- **Auth (shortcut):** no login for the hackathon. After onboarding, requests carry
+  `X-Investor-Id`. Upgrade to real sessions after the hackathon.
 - **Layers:**
   - `routes/` handles HTTP.
   - `services/` holds the logic.
@@ -228,6 +233,13 @@ GET  /watch-events?status=open · POST /candidates/{id}/recheck
 The DD and Gmail routes are in `scout-dd-loop.md`.
 
 ## Frontend
+
+**Built by a separate frontend team** against the API contract:
+- `docs/api/openapi.json`, regenerated with `make openapi`
+- `docs/api/README.md`: flows, call order, the auth header, SSE events and status diagrams
+
+The backend publishes the contract first, with stub routes, so both sides work in
+parallel. The pages below are the intended product behaviour.
 
 1. **Onboarding:**
    - LinkedIn, or name + firm, then "Is this you?"
