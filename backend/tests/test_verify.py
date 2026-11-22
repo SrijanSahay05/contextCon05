@@ -190,3 +190,13 @@ def test_grant_claim_named_like_ingestion_matches_the_web_fact() -> None:
     facts = [Item(1, "grant", {"program": "iDEX - DIO", "quote": "..."}, None, "company")]
     claim = Item("g", "grant", {"name": "iDEX", "amount": None}, None, "company")
     assert check(claim, facts)[0] == "verified"
+
+
+def test_grant_claim_matches_a_crustdata_grant_round() -> None:
+    from app.services.dd.verify import verify as check
+    from app.services.scoring.rules import Item
+
+    facts = [Item(1, "funding_round", {"round_type": "grant", "investors": ["iDEX - DIO"]},
+                  None, "company")]
+    claim = Item("g", "grant", {"name": "iDEX"}, None, "company")
+    assert check(claim, facts)[0] == "verified"

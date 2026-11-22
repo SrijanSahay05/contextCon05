@@ -164,6 +164,12 @@ def _grant(claim: Item, facts: list[Item]) -> Outcome:
         if f.predicate == GRANT and isinstance(f.value, dict) \
                 and _contains(program, f.value.get("program")):
             return R.verified, [int(f.id)], f"Quoted on the web: {f.value.get('program')}"
+        # Crustdata records many grants as funding rounds of type "grant" (e.g. iDEX - DIO)
+        if f.predicate == fm.FUNDING_ROUND and isinstance(f.value, dict) \
+                and _text(f.value.get("round_type")) == "grant" \
+                and any(_contains(program, i) for i in f.value.get("investors") or []):
+            who = ", ".join(f.value["investors"])
+            return R.verified, [int(f.id)], f"Grant round on record from {who}"
     return R.unverifiable, [], f"No public record of the grant {program or ''}".rstrip()
 
 
