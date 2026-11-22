@@ -17,7 +17,7 @@ from app.models.search import Candidate, ScoreSnapshot, Search
 from app.repositories import scores
 from app.services.scoring.actions import suggest
 from app.services.scoring.engine import Profile, score
-from app.services.scoring.rules import UNKNOWN, Evidence
+from app.services.scoring.rules import GRANT, UNKNOWN, Evidence
 from app.services.scoring.signals import signals_for
 
 
@@ -77,6 +77,7 @@ def score_candidate(
         red_flags=sum(d.kind == SignalKind.red_flag for d in drafts),
         has_deck=scores.has_deck(db, candidate.id),
         status=candidate.status, dd_stage=candidate.dd_stage,
+        unmet=unmet_requirements(search, evidence),
     )
 
     rows = breakdown.to_json()
@@ -99,6 +100,14 @@ def score_candidate(
     db.flush()
     db.refresh(candidate)
     return candidate
+
+
+def unmet_requirements(search: Search, evidence: Evidence) -> tuple[str, ...]:
+    """What the search required that no stored fact verifies (grants: a quoted `grant`)."""
+    grants = (search.parsed_filters or {}).get("grants") or {}
+    if grants.get("required") and not evidence.get(GRANT):
+        return ("a government grant",)
+    return ()
 
 
 def score_search(db: Session, search_id: uuid.UUID,

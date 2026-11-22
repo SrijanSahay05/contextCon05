@@ -20,7 +20,9 @@ def suggest(
     has_deck: bool = False,
     status: CandidateStatus = CandidateStatus.new,
     dd_stage: DDStage | None = None,
+    unmet: tuple[str, ...] = (),
 ) -> tuple[SuggestedAction, str]:
+    """`unmet`: requirements the search asked for that no fact verifies (e.g. a grant)."""
     reach, watch = float(thresholds["reach_out"]), float(thresholds["watch"])
     min_complete = float(thresholds["min_completeness"])
     if exclusion:
@@ -30,6 +32,10 @@ def suggest(
     if (status == CandidateStatus.in_dd and dd_stage == DDStage.ready_for_decision
             and score >= reach):
         return SuggestedAction.invest, f"DD complete and score {score:g} ≥ {reach:g}"
+    if score >= reach and unmet:
+        return SuggestedAction.request_data, (
+            f"Score {score:g} ≥ {reach:g}, but the search requires {', '.join(unmet)} "
+            "and no source verifies it: ask the founders")
     if score >= reach and completeness >= min_complete and not red_flags:
         return SuggestedAction.reach_out, f"Score {score:g} ≥ {reach:g} with " \
             f"{completeness:.0%} of the evidence and no red flags"

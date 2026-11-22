@@ -95,8 +95,18 @@ def test_self_reported_only_is_gap() -> None:
     ({"score": None, "completeness": 0.0}, SuggestedAction.request_data),
     ({"score": 70, "completeness": 0.8, "red_flags": 1, "has_deck": True},
      SuggestedAction.watch),
+    ({"score": 80, "completeness": 0.9, "unmet": ("a government grant",)},
+     SuggestedAction.request_data),
 ])
 def test_action_table(kwargs: dict[str, Any], action: SuggestedAction) -> None:
     args: dict[str, Any] = {"completeness": 0.8, "exclusion": None, "thresholds": THRESH}
     got, reason = suggest(**(args | kwargs))
     assert got == action and reason
+
+
+def test_far_bigger_than_entry_profile_is_a_red_flag() -> None:
+    thesis = [{"dimension": "entry_profile", "value": {"median_headcount": 75}}]
+    items = [Item(1, "headcount_total", 1425, AS_OF, "company")]
+    ev = Evidence(items, AS_OF, thesis, company_name="Acme")
+    red = kinds(signals_for(ev, score(ev, Profile.generic())), SignalKind.red_flag)
+    assert "Far outside the fund's entry profile: 1425 people vs a median of 75 at entry" in red

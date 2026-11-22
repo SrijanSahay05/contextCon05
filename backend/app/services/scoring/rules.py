@@ -210,6 +210,18 @@ def thesis_match(ev: Evidence) -> RuleResult:
         reasons.append(f"HQ {country.value} {'in' if fit else 'outside'} thesis geography")
         used.append(country)
 
+    # a firm backing ~75-person companies isn't a fit for a 1,400-person one, whatever its
+    # sector: compare size with the fund's median at entry
+    entry_points = ev.thesis("entry_profile")
+    headcount = _latest(ev, fm.HEADCOUNT_TOTAL)
+    median = (entry_points[0].get("value") or {}).get("median_headcount") if entry_points else None
+    if median and headcount and isinstance(headcount.value, (int, float)) and median > 0:
+        ratio = float(headcount.value) / float(median)
+        near, far = ev.params.get("entry_size_near", 3.0), ev.params.get("entry_size_far", 10.0)
+        parts.append(100 if ratio <= near else 50 if ratio <= far else 0)
+        reasons.append(f"headcount {headcount.value:g} vs {median:g} at entry ({ratio:.1f}x)")
+        used.append(headcount)
+
     if not parts:
         return result(UNKNOWN, "No sector, stage or geography data to match the thesis", [])
     score = statistics.fmean(parts) + bonus * 100

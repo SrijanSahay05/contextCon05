@@ -23,6 +23,7 @@ from app.services.scoring.rules import (
 STRONG_GROWTH = 0.5
 DECLINE = -0.2
 FOUNDER_YEARS = 5
+ENTRY_SIZE_FAR = 10  # headcount multiple of the fund's median at entry
 TIER1_INVESTORS = ("sequoia", "peak xv", "accel", "lightspeed", "elevation", "blume",
                    "nexus", "matrix", "kalaari", "a16z", "andreessen", "y combinator",
                    "tiger global", "general catalyst", "index ventures", "benchmark")
@@ -99,6 +100,13 @@ def signals_for(ev: Evidence, breakdown: Breakdown, window_months: int = 6
         if not {str(v).lower() for v in old.value} & {str(v).lower() for v in new.value}:
             out.append(_cite(red, f"Sector changed: {', '.join(old.value)} → "
                              f"{', '.join(new.value)} (possible pivot)", [old, new]))
+
+    entry = ev.thesis("entry_profile")
+    median = (entry[0].get("value") or {}).get("median_headcount") if entry else None
+    sizes = [i for i in ev.get(fm.HEADCOUNT_TOTAL) if isinstance(i.value, (int, float))]
+    if median and sizes and sizes[-1].value >= ENTRY_SIZE_FAR * float(median):
+        out.append(_cite(red, f"Far outside the fund's entry profile: {sizes[-1].value:g} "
+                         f"people vs a median of {float(median):g} at entry", [sizes[-1]]))
 
     for c in breakdown.criteria:
         if c.score == UNKNOWN:

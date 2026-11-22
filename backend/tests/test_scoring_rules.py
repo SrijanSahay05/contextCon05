@@ -119,3 +119,12 @@ def test_technical_depth_and_capital_efficiency() -> None:
     assert res.score == 60  # 40 + 2 years × 10
     eff = r.capital_efficiency(ev(f("funding_total_usd", 2_000_000), f("headcount_total", 20)))
     assert eff.score == 75  # $100k per head = the benchmark
+
+
+def test_thesis_match_penalises_companies_far_bigger_than_entry_size() -> None:
+    base = [f("industries", ["Fintech"]), f("last_round_type", "seed"), f("hq_country", "India")]
+    near = r.thesis_match(ev(*base, f("headcount_total", 40)))  # 2x the median of 20
+    far = r.thesis_match(ev(*base, f("headcount_total", 1400)))  # 70x: a mature company
+    assert near.score == 100
+    assert far.score == 75  # mean of 100, 100, 100, 0
+    assert "1400 vs 20 at entry (70.0x)" in far.reason
