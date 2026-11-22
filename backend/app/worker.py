@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
 from app.models.enums import RunStatus
-from app.services.jobs import queue
+from app.services.jobs import handlers, queue  # noqa: F401  (handlers registers job kinds)
 from app.services.jobs.registry import HANDLERS
 from app.services.jobs.steps import CeilingReached, DeadlinePassed, StepRunner, set_run_status
 
