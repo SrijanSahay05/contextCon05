@@ -47,12 +47,10 @@ def _libpq_dsn(database: str) -> str:
 
 @pytest.fixture(scope="session", autouse=True)
 def _test_databases() -> None:
+    # recreated every session: a test DB left at another branch's revision can't block a run
     with psycopg.connect(_libpq_dsn(str(_dev_db.database)), autocommit=True) as conn:
-        exists = conn.execute(
-            "SELECT 1 FROM pg_database WHERE datname = %s", (TEST_DB_NAME,)
-        ).fetchone()
-        if not exists:
-            conn.execute(f'CREATE DATABASE "{TEST_DB_NAME}"')
+        conn.execute(f'DROP DATABASE IF EXISTS "{TEST_DB_NAME}" WITH (FORCE)')
+        conn.execute(f'CREATE DATABASE "{TEST_DB_NAME}"')
     command.upgrade(Config("alembic.ini"), "head")
     MongoClient(_env.mongo_url).drop_database(TEST_MONGO_DB)
 
