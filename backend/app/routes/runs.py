@@ -1,11 +1,15 @@
+from collections.abc import Iterator
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
 
+from app.db.session import get_db
 from app.deps import current_investor_id
-from app.errors import AUTH_RESPONSES, not_implemented
+from app.errors import AUTH_RESPONSES
 from app.schemas.run import RunOut
+from app.services import runs as service
 
 router = APIRouter(
     prefix="/runs", tags=["runs"], responses=AUTH_RESPONSES,
@@ -14,10 +18,10 @@ router = APIRouter(
 
 
 @router.get("/{run_id}", response_model=RunOut)
-def get_run(run_id: UUID) -> RunOut:
+def get_run(run_id: UUID, db: Session = Depends(get_db)) -> RunOut:
     """Status, steps, credits spent, hold reason and the last 50 ledger rows. Poll this
     if SSE isn't available; stop when `status` is `done`, `failed` or `held`."""
-    not_implemented()
+    return service.get_run(db, run_id)
 
 
 @router.get(
@@ -43,4 +47,14 @@ def run_events(run_id: UUID) -> StreamingResponse:
     `EventSource` can't send headers, so use a fetch-based SSE reader with
     `X-Investor-Id`.
     """
-    not_implemented()
+    events = service.stream_events(run_id)
+    first = next(events)  # raises the 404 envelope before the stream starts
+    return StreamingResponse(
+        _prepend(first, events), media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+def _prepend(first: str, rest: Iterator[str]) -> Iterator[str]:
+    yield first
+    yield from rest
