@@ -1,0 +1,98 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/company/search",
+  "request": {
+    "filters": {
+      "field": "funding.investors",
+      "type": "(.)",
+      "value": "Accel"
+    },
+    "limit": 25,
+    "fields": [
+      "crustdata_company_id",
+      "basic_info.name",
+      "basic_info.primary_domain",
+      "funding.investors"
+    ]
+  },
+  "headers": {
+    "x-credits-used": "0.18"
+  },
+  "response": {
+    "companies": [
+      {
+        "crustdata_company_id": 700001,
+        "basic_info": {
+          "name": "Lumen Ledger"
+        },
+        "funding": {
+          "investors": [
+            "Accel",
+            "Accel-KKR",
+            "Angel Collective"
+          ]
+        }
+      },
+      {
+        "crustdata_company_id": 700002,
+        "basic_info": {
+          "name": "Paysetu"
+        },
+        "funding": {
+          "investors": [
+            "Accel India",
+            "Accel"
+          ]
+        }
+      },
+      {
+        "crustdata_company_id": 700003,
+        "basic_info": {
+          "name": "Kirana Cloud"
+        },
+        "funding": {
+          "investors": [
+            "Accel"
+          ]
+        }
+      },
+      {
+        "crustdata_company_id": 700004,
+        "basic_info": {
+          "name": "LedgerLoop"
+        },
+        "funding": {
+          "investors": [
+            "Accel",
+            "Sequoia Surge"
+          ]
+        }
+      },
+      {
+        "crustdata_company_id": 700005,
+        "basic_info": {
+          "name": "Agrovia"
+        },
+        "funding": {
+          "investors": [
+            "Accel-KKR",
+            "Tiger Global Management"
+          ]
+        }
+      },
+      {
+        "crustdata_company_id": 700006,
+        "basic_info": {
+          "name": "Orbit Health"
+        },
+        "funding": {
+          "investors": [
+            "Acceleration Partners"
+          ]
+        }
+      }
+    ],
+    "next_cursor": null,
+    "total_count": 6
+  }
+}

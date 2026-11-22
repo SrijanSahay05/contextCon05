@@ -8061,6 +8061,24 @@
               "title": "Source Id",
               "type": "string"
             }
+          },
+          {
+            "description": "A fact citing this source; fills `citation.locator` and `quote`.",
+            "in": "query",
+            "name": "fact_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A fact citing this source; fills `citation.locator` and `quote`.",
+              "title": "Fact Id"
+            }
           }
         ],
         "responses": {

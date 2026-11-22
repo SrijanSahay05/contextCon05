@@ -101,7 +101,8 @@ def test_stub_returns_501_envelope() -> None:
 
 
 def test_public_stub_needs_no_header() -> None:
-    response = client.post("/investors/onboard", json={"name": "Ananya Rao", "firm": "Kestrel"})
+    # a public route that is still a stub (onboard is implemented and would call Crustdata)
+    response = client.post("/webhooks/crustdata/watch?token=t", json={"event": "test"})
 
     assert response.status_code == 501
 

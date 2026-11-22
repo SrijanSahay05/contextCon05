@@ -1,0 +1,254 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/company/enrich",
+  "request": {
+    "crustdata_company_ids": [
+      700001,
+      700002,
+      700003,
+      700004,
+      700005,
+      700006
+    ],
+    "fields": [
+      "basic_info",
+      "funding"
+    ]
+  },
+  "headers": {
+    "x-credits-used": "12"
+  },
+  "response": [
+    {
+      "matched_on": "700001",
+      "match_type": "crustdata_company_id",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 700001,
+            "basic_info": {
+              "crustdata_company_id": 700001,
+              "name": "Lumen Ledger"
+            },
+            "funding": {
+              "investors": [
+                "Accel",
+                "Accel-KKR",
+                "Angel Collective"
+              ],
+              "investors_detailed": [
+                {
+                  "name": "Accel",
+                  "type": "organization",
+                  "categories": [
+                    "venture_capital"
+                  ],
+                  "permalink": "accel"
+                },
+                {
+                  "name": "Accel-KKR",
+                  "type": "organization",
+                  "categories": [
+                    "private_equity_firm"
+                  ],
+                  "permalink": "accel-kkr"
+                },
+                {
+                  "name": "Angel Collective",
+                  "type": "organization",
+                  "categories": [
+                    "angel_group"
+                  ],
+                  "permalink": "angel-collective"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "matched_on": "700002",
+      "match_type": "crustdata_company_id",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 700002,
+            "basic_info": {
+              "crustdata_company_id": 700002,
+              "name": "Paysetu"
+            },
+            "funding": {
+              "investors": [
+                "Accel India",
+                "Accel"
+              ],
+              "investors_detailed": [
+                {
+                  "name": "Accel India",
+                  "type": "organization",
+                  "categories": [
+                    "venture_capital"
+                  ],
+                  "permalink": "accel-india"
+                },
+                {
+                  "name": "Accel",
+                  "type": "organization",
+                  "categories": [
+                    "venture_capital"
+                  ],
+                  "permalink": "accel"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "matched_on": "700003",
+      "match_type": "crustdata_company_id",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 700003,
+            "basic_info": {
+              "crustdata_company_id": 700003,
+              "name": "Kirana Cloud"
+            },
+            "funding": {
+              "investors": [
+                "Accel"
+              ],
+              "investors_detailed": [
+                {
+                  "name": "Accel",
+                  "type": "organization",
+                  "categories": [
+                    "venture_capital"
+                  ],
+                  "permalink": "accel"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "matched_on": "700004",
+      "match_type": "crustdata_company_id",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 700004,
+            "basic_info": {
+              "crustdata_company_id": 700004,
+              "name": "LedgerLoop"
+            },
+            "funding": {
+              "investors": [
+                "Accel",
+                "Sequoia Surge"
+              ],
+              "investors_detailed": [
+                {
+                  "name": "Accel",
+                  "type": "organization",
+                  "categories": [
+                    "venture_capital"
+                  ],
+                  "permalink": "accel"
+                },
+                {
+                  "name": "Sequoia Surge",
+                  "type": "organization",
+                  "categories": [
+                    "venture_capital"
+                  ],
+                  "permalink": "sequoia-surge"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "matched_on": "700005",
+      "match_type": "crustdata_company_id",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 700005,
+            "basic_info": {
+              "crustdata_company_id": 700005,
+              "name": "Agrovia"
+            },
+            "funding": {
+              "investors": [
+                "Accel-KKR",
+                "Tiger Global Management"
+              ],
+              "investors_detailed": [
+                {
+                  "name": "Accel-KKR",
+                  "type": "organization",
+                  "categories": [
+                    "private_equity_firm"
+                  ],
+                  "permalink": "accel-kkr"
+                },
+                {
+                  "name": "Tiger Global Management",
+                  "type": "organization",
+                  "categories": [
+                    "hedge_fund"
+                  ],
+                  "permalink": "tiger-global"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "matched_on": "700006",
+      "match_type": "crustdata_company_id",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 700006,
+            "basic_info": {
+              "crustdata_company_id": 700006,
+              "name": "Orbit Health"
+            },
+            "funding": {
+              "investors": [
+                "Acceleration Partners"
+              ],
+              "investors_detailed": [
+                {
+                  "name": "Acceleration Partners",
+                  "type": "organization",
+                  "categories": [
+                    "venture_capital"
+                  ],
+                  "permalink": "acceleration-partners"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

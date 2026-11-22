@@ -1,0 +1,113 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/person/search",
+  "request": {
+    "filters": {
+      "op": "and",
+      "conditions": [
+        {
+          "field": "basic_profile.name",
+          "type": "(.)",
+          "value": "Ananya Rao"
+        },
+        {
+          "field": "experience.employment_details.current.company_id",
+          "type": "in",
+          "value": [
+            500100
+          ]
+        }
+      ]
+    },
+    "limit": 10
+  },
+  "headers": {
+    "x-credits-used": "0.06"
+  },
+  "response": {
+    "profiles": [
+      {
+        "crustdata_person_id": 990001,
+        "basic_profile": {
+          "name": "Ananya Rao",
+          "headline": "Partner at Accel | Fintech, B2B SaaS",
+          "current_title": "Partner",
+          "location": {
+            "city": "Bengaluru",
+            "country": "India",
+            "raw": "Bengaluru, India"
+          }
+        },
+        "experience": {
+          "employment_details": {
+            "current": [
+              {
+                "name": "Accel",
+                "title": "Partner",
+                "start_date": "2018-04-01T00:00:00+00:00",
+                "crustdata_company_id": 500100,
+                "company_website_domain": "accel.com"
+              }
+            ],
+            "past": [
+              {
+                "name": "Razorpay",
+                "title": "Product Manager",
+                "start_date": "2014-01-01T00:00:00+00:00",
+                "end_date": "2018-03-01T00:00:00+00:00",
+                "crustdata_company_id": 640123
+              }
+            ]
+          }
+        },
+        "social_handles": {
+          "professional_network_identifier": {
+            "profile_url": "https://www.linkedin.com/in/ananya-rao-accel"
+          }
+        }
+      },
+      {
+        "crustdata_person_id": 990002,
+        "basic_profile": {
+          "name": "Ananya Rao",
+          "headline": "Investment Analyst at Accel",
+          "current_title": "Investment Analyst",
+          "location": {
+            "city": "Mumbai",
+            "country": "India",
+            "raw": "Mumbai, India"
+          }
+        },
+        "experience": {
+          "employment_details": {
+            "current": [
+              {
+                "name": "Accel",
+                "title": "Investment Analyst",
+                "start_date": "2026-10-01T00:00:00+00:00",
+                "crustdata_company_id": 500100,
+                "company_website_domain": "accel.com"
+              }
+            ],
+            "past": [
+              {
+                "name": "Razorpay",
+                "title": "Product Manager",
+                "start_date": "2014-01-01T00:00:00+00:00",
+                "end_date": "2018-03-01T00:00:00+00:00",
+                "crustdata_company_id": 640123
+              }
+            ]
+          }
+        },
+        "social_handles": {
+          "professional_network_identifier": {
+            "profile_url": "https://www.linkedin.com/in/ananya-rao-analyst"
+          }
+        }
+      }
+    ],
+    "next_cursor": null,
+    "total_count": 2
+  }
+}

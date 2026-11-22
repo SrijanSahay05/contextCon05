@@ -37,6 +37,12 @@ TEST_MONGO_DB = f"{_env.mongo_db}_{_suffix}"
 
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 os.environ["MONGO_DB"] = TEST_MONGO_DB
+# tests must never reach the network or spend credits: no keys, unroutable hosts, so a
+# test that forgets a fake transport fails fast instead of calling the live APIs
+os.environ["CRUSTDATA_API_KEY"] = ""
+os.environ["CRUSTDATA_BASE_URL"] = "http://crustdata.invalid"
+os.environ["OPENROUTER_API_KEY"] = ""
+os.environ["OPENROUTER_BASE_URL"] = "http://openrouter.invalid/api/v1"
 
 
 def _libpq_dsn(database: str) -> str:
