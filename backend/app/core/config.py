@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     database_url: str
+    redis_url: str
     mongo_url: str
     mongo_db: str
 
