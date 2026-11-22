@@ -167,3 +167,17 @@ def test_verify_claims_job(db: Session) -> None:
     rerun = queue.create_run(db, RunKind.dd, {"candidate_id": str(candidate.id)})
     verify_claims(db, StepRunner(db, rerun.id), payload)
     assert len(db.scalars(select(Verification)).all()) == 3
+
+
+def test_round_type_labels_and_exact_company_fields_from_live_run() -> None:
+    from app.services.dd.verify import verify as check
+    from app.services.scoring.rules import Item
+
+    facts = [Item(1, "last_round_type", "series_c", None, "company"),
+             Item(2, "year_founded", 2019, None, "company")]
+    assert check(Item("a", "last_round_type", "Series C", None, "company"),
+                 facts)[0] == "verified"
+    assert check(Item("b", "year_founded", 2019, None, "company"),
+                 facts)[0] == "verified"
+    assert check(Item("c", "year_founded", 2017, None, "company"),
+                 facts)[0] == "contradicted"

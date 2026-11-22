@@ -117,10 +117,27 @@ def _last_round(claim: Item, facts: list[Item]) -> Outcome:
     if not same:
         return R.unverifiable, [], "No last round type on record"
     fact = same[-1]
-    if _text(fact.value) == _text(claim.value):
+    # "Series C" and "series_c" are the same round
+    if _round_key(fact.value) == _round_key(claim.value):
         return R.verified, [int(fact.id)], f"Last round on record is {fact.value}"
     return R.contradicted, [int(fact.id)], (f"Claim says {claim.value}; last round on record "
                                             f"is {fact.value}")
+
+
+def _round_key(value: object) -> str:
+    return "".join(ch for ch in str(value or "").lower() if ch.isalnum())
+
+
+def _exact(claim: Item, facts: list[Item]) -> Outcome:
+    """Single-valued company fields (year founded, HQ country): equal or not."""
+    same = [f for f in facts if f.predicate == claim.predicate]
+    if not same:
+        return R.unverifiable, [], f"No {claim.predicate} on record"
+    fact = same[-1]
+    if _round_key(fact.value) == _round_key(claim.value):
+        return R.verified, [int(fact.id)], f"{claim.predicate} on record is {fact.value}"
+    return R.contradicted, [int(fact.id)], (f"Claim says {claim.value}; "
+                                            f"{claim.predicate} on record is {fact.value}")
 
 
 def _background(claim: Item, facts: list[Item]) -> Outcome:
@@ -164,4 +181,6 @@ def verify(claim: Item, facts: list[Item], tolerance: Tolerance = Tolerance()) -
         return _background(claim, facts)
     if p == GRANT:
         return _grant(claim, facts)
+    if p in (fm.YEAR_FOUNDED, fm.HQ_COUNTRY):
+        return _exact(claim, facts)
     return R.unverifiable, [], f"No independent source for {p}"
