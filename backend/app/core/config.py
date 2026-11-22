@@ -13,8 +13,6 @@ class Settings(BaseSettings):
 
     database_url: str
     redis_url: str
-    mongo_url: str
-    mongo_db: str
 
 
 @lru_cache

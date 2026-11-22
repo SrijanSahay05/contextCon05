@@ -1,15 +1,19 @@
 from fastapi import APIRouter, Depends
+from redis.asyncio import Redis
 from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.mongo import mongo_client
+from app.db.redis import get_redis
 from app.db.session import get_db
 
 router = APIRouter(tags=["health"])
 
 
 @router.get("/healthz")
-def healthz(db: Session = Depends(get_db)) -> dict[str, str]:
-    db.execute(text("SELECT 1"))
-    mongo_client.admin.command("ping")
+async def healthz(
+    db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
+) -> dict[str, str]:
+    await db.execute(text("SELECT 1"))
+    await redis.ping()
     return {"status": "ok"}
