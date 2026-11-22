@@ -11,7 +11,7 @@
         "id": 54791,
         "started_at": "2026-11-22T00:00:00Z",
         "completed_at": "2026-11-22T00:02:10Z",
-        "status": "completed",
+        "status": "SUCCESS",
         "failure_reason": null,
         "records_searched": 1,
         "records_matched": 1
