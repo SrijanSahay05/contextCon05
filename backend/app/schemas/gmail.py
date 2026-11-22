@@ -26,3 +26,13 @@ class GmailStatus(BaseModel):
         },
         {"connected": False, "email": None, "status": None, "scopes": [], "connected_at": None},
     )
+
+
+class GmailConnect(BaseModel):
+    """Where to send the browser to start the Gmail OAuth flow."""
+
+    auth_url: str
+
+    model_config = examples(
+        {"auth_url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=...&state=..."}
+    )
