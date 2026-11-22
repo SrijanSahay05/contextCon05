@@ -1,0 +1,48 @@
+{
+  "generic": {
+    "criteria": [
+      {"key": "thesis_fit", "weight": 0.25, "rule": "thesis_match", "params": {}},
+      {"key": "team", "weight": 0.20, "rule": "team_signals", "params": {"use_pedigree": false}},
+      {"key": "traction", "weight": 0.20, "rule": "growth_signals", "params": {"window_months": 6}},
+      {"key": "funding", "weight": 0.10, "rule": "funding_stage_fit", "params": {}},
+      {"key": "market", "weight": 0.15, "rule": "market_signals", "params": {}},
+      {"key": "momentum", "weight": 0.10, "rule": "recent_events", "params": {"window_months": 6}}
+    ],
+    "thresholds": {"reach_out": 65, "watch": 45, "min_completeness": 0.5},
+    "self_reported_weight": 0.5,
+    "source_tiers": {"A": 1.0, "B": 0.8, "C": 0.5}
+  },
+  "min_deals": 5,
+  "early_stages": ["pre_seed", "seed", "angel"],
+  "later_stages": ["series_a", "series_b", "series_c", "series_d", "series_e", "series_f",
+                   "series_unknown", "private_equity", "growth_equity"],
+  "early_heavy": {
+    "min_share": 0.6,
+    "adjust": {"team": 0.10, "traction": -0.10},
+    "params": {"traction": {"benchmark": "median_headcount_at_entry"}}
+  },
+  "later_heavy": {
+    "min_share": 0.6,
+    "adjust": {"traction": 0.10, "funding": 0.05, "team": -0.10, "market": -0.05}
+  },
+  "concentrated": {"min_top_share": 0.7, "adjust": {"thesis_fit": 0.05}},
+  "lead_heavy": {"min_lead_share": 0.5, "adjust": {"team": 0.05}},
+  "trend": {"min_deals": 3, "bonus": 0.1},
+  "partner_lens": {"min_deals": 2, "bonus": 0.1},
+  "technical_partner": {
+    "min_years": 3,
+    "criterion": {"key": "technical_depth", "weight": 0.10, "rule": "technical_depth", "params": {}}
+  },
+  "founder_partner": {"criterion": "team", "param": "founder_market_fit"},
+  "finance_partner": {
+    "criterion": {"key": "capital_efficiency", "weight": 0.10, "rule": "capital_efficiency",
+                  "params": {}}
+  },
+  "title_keywords": {
+    "engineering": ["engineer", "developer", "researcher", "research scientist", "research engineer", "scientist", "cto", "architect",
+                    "programmer", "technical lead", "tech lead"],
+    "founder": ["founder"],
+    "finance": ["banker", "banking", "finance", "financial", "cfo", "private equity",
+                "investment analyst", "equity research", "trader", "m&a"]
+  }
+}
