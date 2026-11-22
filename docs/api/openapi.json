@@ -2076,6 +2076,25 @@
         "title": "FundSummary",
         "type": "object"
       },
+      "GmailConnect": {
+        "description": "Where to send the browser to start the Gmail OAuth flow.",
+        "examples": [
+          {
+            "auth_url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=...&state=..."
+          }
+        ],
+        "properties": {
+          "auth_url": {
+            "title": "Auth Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "auth_url"
+        ],
+        "title": "GmailConnect",
+        "type": "object"
+      },
       "GmailStatus": {
         "description": "Whether the partner's Gmail is connected. Uploads work without it.",
         "examples": [
@@ -6463,10 +6482,17 @@
     },
     "/integrations/gmail/connect": {
       "get": {
-        "description": "Redirects to Google's consent screen (send + read scopes).",
+        "description": "Returns Google's consent-screen URL (send + read scopes). Navigate the browser to\n`auth_url`; a plain redirect wouldn't work because navigation can't send\n`X-Investor-Id`. The `state` inside the URL identifies the investor on the callback.",
         "operationId": "gmail_connect_integrations_gmail_connect_get",
         "responses": {
-          "307": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmailConnect"
+                }
+              }
+            },
             "description": "Successful Response"
           },
           "401": {
@@ -8536,8 +8562,21 @@
     },
     "/webhooks/crustdata/watch": {
       "post": {
-        "description": "Called by Crustdata, not the frontend. Checked with the shared webhook secret;\nrecords a watch event and re-scores in the background.",
+        "description": "Called by Crustdata, not the frontend. Checked with the shared secret in `token`;\nrecords a watch event and re-scores in the background.",
         "operationId": "crustdata_watch_webhooks_crustdata_watch_post",
+        "parameters": [
+          {
+            "description": "The shared WEBHOOK_SECRET, embedded in the webhook URL given to Crustdata when the watch is created. A wrong or missing token returns 401.",
+            "in": "query",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "description": "The shared WEBHOOK_SECRET, embedded in the webhook URL given to Crustdata when the watch is created. A wrong or missing token returns 401.",
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {

@@ -155,8 +155,10 @@ send the whole object back.
 ### Gmail (screen: settings)
 
 - `GET /integrations/gmail` → `GmailStatus`.
-- `GET /integrations/gmail/connect` → 307 to Google; Google returns to
-  `/integrations/gmail/callback`, which redirects back to the app.
+- `GET /integrations/gmail/connect` → `GmailConnect {auth_url}`; set
+  `window.location = auth_url` (a navigation can't carry `X-Investor-Id`, so this
+  isn't a redirect). Google returns to `/integrations/gmail/callback`, which
+  redirects back to the app.
 - `DELETE /integrations/gmail` → `connected: false`.
 
 ## Status diagrams
