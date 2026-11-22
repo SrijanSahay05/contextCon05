@@ -1,0 +1,72 @@
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+  transition: opacity 200ms ease;
+}
+.cursor[data-visible='true'] {
+  opacity: 1;
+}
+
+/* Triangle; offset so its tip lands exactly on the pointer. */
+.cursor__arrow {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  overflow: visible;
+  transform-origin: 2px 2px;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.22));
+  transition:
+    transform 240ms var(--ease-out),
+    opacity var(--t-fast) ease;
+}
+.cursor__arrow path {
+  fill: var(--text);
+  stroke: #fff;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  transition: fill var(--t-base) ease;
+}
+
+.cursor[data-mode='hover'] .cursor__arrow {
+  transform: scale(1.14);
+}
+.cursor[data-mode='hover'] .cursor__arrow path {
+  fill: var(--accent);
+}
+.cursor[data-down='true'] .cursor__arrow {
+  transform: scale(0.86);
+}
+
+/* I-beam over text fields. */
+.cursor__beam {
+  position: absolute;
+  top: -11px;
+  left: -1px;
+  width: 2px;
+  height: 22px;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transform: scaleY(0.4);
+  transition:
+    opacity var(--t-fast) ease,
+    transform 240ms var(--ease-out);
+}
+.cursor[data-mode='text'] .cursor__beam {
+  opacity: 1;
+  transform: scaleY(1);
+}
+.cursor[data-mode='text'] .cursor__arrow {
+  opacity: 0;
+  transform: scale(0.6);
+}

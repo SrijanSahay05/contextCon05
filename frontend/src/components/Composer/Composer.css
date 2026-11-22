@@ -1,0 +1,103 @@
+.composer {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow-md);
+  padding: 18px 18px 12px 22px;
+  transition:
+    box-shadow 300ms ease,
+    border-color 300ms ease;
+}
+.composer:focus-within {
+  border-color: rgba(0, 113, 227, 0.35);
+  box-shadow:
+    0 0 0 4px rgba(0, 113, 227, 0.1),
+    var(--shadow-lg);
+}
+
+.composer__field {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  resize: none;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 17px;
+  line-height: 1.47;
+}
+.composer__field::placeholder {
+  color: var(--text-3);
+}
+
+.composer__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.composer__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  letter-spacing: -0.006em;
+  color: var(--text-3);
+  transition: color var(--t-base) ease;
+}
+.composer__hint.is-on {
+  color: var(--accent);
+}
+
+.composer__send {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--accent);
+  transition:
+    background-color var(--t-base) ease,
+    opacity var(--t-base) ease,
+    transform var(--t-fast) ease;
+}
+.composer__send:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.composer__send:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.composer__send:disabled {
+  opacity: 0.25;
+}
+.composer.is-busy .composer__send {
+  animation: breathe 1.1s ease-in-out infinite;
+}
+
+.composer__status {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 8px 16px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  color: var(--text-2);
+  font-size: 13px;
+  letter-spacing: -0.006em;
+}
+.composer__status strong {
+  color: var(--text);
+  font-weight: 500;
+}
+.composer__plan {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.composer__status--error {
+  background: var(--red-soft);
+  color: var(--red);
+}
