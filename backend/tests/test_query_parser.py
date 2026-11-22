@@ -52,12 +52,22 @@ def test_bits_deeptech_grants_query() -> None:
         make_clients(FakeLLM(BITS_REPLY), crust), BITS_QUERY, None, as_of=date(2026, 11, 22)
     )
     assert unresolved == []
-    assert crust.seen == [{"field": "education.schools.school",
-                           "query": "Birla Institute of Technology and Science", "limit": 10}]
+    # every BITS spelling is looked up; matches are combined, a different school is not
+    assert [b["query"] for b in crust.seen] == [
+        "Birla Institute of Technology and Science", "Birla Institute of Technology & Science",
+        "BITS Pilani", "BITS, Pilani", "BITS-Pilani",
+    ]
     [school] = spec.people
     assert school.field == "education.schools.school" and school.op == "in"
-    assert school.value == ["Birla Institute of Technology and Science, Pilani",
-                            "Birla Institute of Technology and Science, Pilani - Goa Campus"]
+    assert school.value == [
+        "Birla Institute of Technology and Science, Pilani",
+        "Birla Institute of Technology and Science, Pilani - Goa Campus",
+        "Birla Institute of Technology & Science, Pilani",
+        # alias spellings keep every campus variant, not just the exact match
+        # ("BITS-PILANI" comes from its own "BITS-Pilani" lookup, not listed in the fixture)
+        "BITS Pilani, Hyderabad Campus", "BITS Pilani", "BITS Pilani Dubai",
+    ]
+    assert "Birla Institute of Technology, Mesra" not in school.value
     [concept] = spec.companies
     assert (concept.op, concept.value) == ("semantic", "deeptech")
     [window] = spec.funding

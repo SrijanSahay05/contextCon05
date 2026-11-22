@@ -21,14 +21,25 @@ from app.services.clients import Clients
 AUTOCOMPLETE_LIMIT = 10
 
 # Informal school names → the indexed name to autocomplete with (data, not logic).
-SCHOOL_ALIASES = {
-    "bitsian": "Birla Institute of Technology and Science",
-    "bitsians": "Birla Institute of Technology and Science",
-    "bits": "Birla Institute of Technology and Science",
-    "iitian": "Indian Institute of Technology",
-    "iitians": "Indian Institute of Technology",
-    "iit": "Indian Institute of Technology",
-    "iim": "Indian Institute of Management",
+# Spellings seen in live autocomplete (2026-11-22). Each is resolved with the exact/contains
+# rule and the matches are combined, so "BITS, Pilani" and "Birla Institute of Technology &
+# Science" both count while "Birla Institute of Technology, Mesra" (a different school) doesn't.
+_BITS = [
+    "Birla Institute of Technology and Science",
+    "Birla Institute of Technology & Science",
+    "BITS Pilani",
+    "BITS, Pilani",
+    "BITS-Pilani",
+]
+SCHOOL_ALIASES: dict[str, list[str]] = {
+    "bitsian": _BITS,
+    "bitsians": _BITS,
+    "bits": _BITS,
+    "bits pilani": _BITS,
+    "iitian": ["Indian Institute of Technology"],
+    "iitians": ["Indian Institute of Technology"],
+    "iit": ["Indian Institute of Technology"],
+    "iim": ["Indian Institute of Management"],
 }
 
 
@@ -102,24 +113,27 @@ def months_before(day: date, months: int) -> date:
     return date(y, m + 1, min(day.day, calendar.monthrange(y, m + 1)[1]))
 
 
-def _lookup(term: Term, key: str) -> str:
+def _lookups(term: Term, key: str) -> tuple[list[str], bool]:
+    """Texts to look up, and whether they are alias spellings."""
     if key == "schools":
         alias = SCHOOL_ALIASES.get(term.phrase.strip().casefold())
         if alias:
-            return alias
-    return term.lookup or term.phrase
+            return alias, True
+    return [term.lookup or term.phrase], False
 
 
 def _resolve(
-    autocomplete: Callable[[dict[str, Any]], CrustResult], field: str, text: str
+    autocomplete: Callable[[dict[str, Any]], CrustResult], field: str, text: str,
+    prefer_exact: bool = True,
 ) -> tuple[list[str], list[str]]:
     """(exact matches, else values containing `text`; all suggestions). Weaker suggestions
-    are only offered to the partner, never taken."""
+    are only offered to the partner, never taken. Alias spellings skip the exact-first
+    rule so campus variants ("BITS Pilani, Hyderabad Campus") are kept."""
     body = {"field": field, "query": text, "limit": AUTOCOMPLETE_LIMIT}
     data = autocomplete(body).data or {}
     suggestions = [s["value"] for s in data.get("suggestions") or [] if s.get("value")]
     needle = text.casefold()
-    exact = [s for s in suggestions if s.casefold() == needle]
+    exact = [s for s in suggestions if s.casefold() == needle] if prefer_exact else []
     return exact or [s for s in suggestions if needle in s.casefold()], suggestions
 
 
@@ -142,7 +156,12 @@ def parse_query(
         for term in getattr(parsed, key):
             if not said(term.phrase):
                 continue
-            matches, suggestions = _resolve(calls[route], field, _lookup(term, key))
+            matches, suggestions = [], []
+            texts, is_alias = _lookups(term, key)
+            for text in texts:
+                found, offered = _resolve(calls[route], field, text, prefer_exact=not is_alias)
+                matches += [m for m in found if m not in matches]
+                suggestions += [o for o in offered if o not in suggestions]
             if not matches:
                 unresolved.append(Unresolved(term=term.phrase, suggestions=suggestions))
                 continue
