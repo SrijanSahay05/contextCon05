@@ -1,6 +1,6 @@
 node_modules
 .DS_Store
 .claude/settings.local.json
-
+.env
 # uploaded DD documents (local storage)
 backend/uploads/
