@@ -1,0 +1,23 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/watch/company/46936/runs",
+  "request": {
+    "limit": 10
+  },
+  "headers": {},
+  "response": {
+    "runs": [
+      {
+        "id": 54791,
+        "started_at": "2026-11-22T00:00:00Z",
+        "completed_at": "2026-11-22T00:02:10Z",
+        "status": "completed",
+        "failure_reason": null,
+        "records_searched": 1,
+        "records_matched": 1
+      }
+    ],
+    "next_cursor": null,
+    "total_count": 1
+  }
+}

@@ -1,0 +1,209 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/company/enrich",
+  "request": {
+    "domains": [
+      "lumenledger.io"
+    ],
+    "fields": [
+      "basic_info",
+      "headcount",
+      "funding"
+    ]
+  },
+  "headers": {
+    "x-credits-used": "2"
+  },
+  "response": [
+    {
+      "matched_on": "lumenledger.io",
+      "match_type": "domain",
+      "matches": [
+        {
+          "confidence_score": 1,
+          "company_data": {
+            "crustdata_company_id": 700001,
+            "basic_info": {
+              "crustdata_company_id": 700001,
+              "name": "Lumen Ledger",
+              "primary_domain": "lumenledger.io",
+              "all_domains": [
+                "lumenledger.io"
+              ],
+              "website": "https://lumenledger.io/",
+              "professional_network_url": "https://www.linkedin.com/company/lumenledger",
+              "professional_network_id": "90000001",
+              "profile_name": "Lumen Ledger",
+              "description": "Accounting automation for mid-market finance teams.",
+              "company_type": "Privately Held",
+              "year_founded": 2019,
+              "employee_count_range": "201-500",
+              "markets": [
+                "PRIVATE"
+              ]
+            },
+            "headcount": {
+              "total": 412,
+              "largest_headcount_country": "United States",
+              "timeseries": [
+                {
+                  "date": "2024-11-01",
+                  "employee_count": 301
+                },
+                {
+                  "date": "2025-02-01",
+                  "employee_count": 322
+                },
+                {
+                  "date": "2025-05-01",
+                  "employee_count": 350
+                },
+                {
+                  "date": "2025-08-01",
+                  "employee_count": 371
+                },
+                {
+                  "date": "2025-11-01",
+                  "employee_count": 388
+                },
+                {
+                  "date": "2026-02-01",
+                  "employee_count": 396
+                },
+                {
+                  "date": "2026-05-01",
+                  "employee_count": 402
+                },
+                {
+                  "date": "2026-08-01",
+                  "employee_count": 409
+                },
+                {
+                  "date": "2026-11-01",
+                  "employee_count": 412
+                }
+              ],
+              "growth_percent": {
+                "mom": 0.74,
+                "qoq": 0.73,
+                "six_months": 4.04,
+                "yoy": 6.19,
+                "two_years": 36.88
+              },
+              "growth_absolute": {
+                "mom": 3,
+                "qoq": 3,
+                "six_months": 16,
+                "yoy": 24,
+                "two_years": 111
+              }
+            },
+            "funding": {
+              "total_investment_usd": 198500000,
+              "last_round_amount_usd": 120000000,
+              "last_fundraise_date": "2025-02-18",
+              "last_round_type": "private_equity",
+              "milestones": [
+                {
+                  "date": "2019-06-01",
+                  "funding_date": "2019-06-01",
+                  "amount_usd": 1500000,
+                  "round_type": "pre_seed",
+                  "investors": "Angel Collective, Sequoia Surge",
+                  "lead_investors": "Sequoia Surge"
+                },
+                {
+                  "date": "2020-03-15",
+                  "funding_date": "2020-03-15",
+                  "amount_usd": 4000000,
+                  "round_type": "seed",
+                  "investors": "Accel, Angel Collective",
+                  "lead_investors": "Accel"
+                },
+                {
+                  "date": "2021-05-20",
+                  "funding_date": "2021-05-20",
+                  "amount_usd": 18000000,
+                  "round_type": "series_a",
+                  "investors": "Lightspeed Venture Partners, Accel",
+                  "lead_investors": "Lightspeed Venture Partners"
+                },
+                {
+                  "date": "2022-09-01",
+                  "funding_date": "2022-09-01",
+                  "amount_usd": 45000000,
+                  "round_type": "series_b",
+                  "investors": "Tiger Global Management, Lightspeed Venture Partners",
+                  "lead_investors": "Tiger Global Management"
+                },
+                {
+                  "date": "2023-11-10",
+                  "funding_date": "2023-11-10",
+                  "amount_usd": 10000000,
+                  "round_type": "debt_financing",
+                  "investors": "Silicon Valley Bank",
+                  "lead_investors": "Silicon Valley Bank"
+                },
+                {
+                  "date": "2025-02-18",
+                  "funding_date": "2025-02-18",
+                  "amount_usd": 120000000,
+                  "round_type": "private_equity",
+                  "investors": "Accel-KKR",
+                  "lead_investors": "Accel-KKR"
+                }
+              ],
+              "investors": [
+                "Accel",
+                "Accel-KKR",
+                "Angel Collective",
+                "Lightspeed Venture Partners",
+                "Sequoia Surge",
+                "Silicon Valley Bank",
+                "Tiger Global Management"
+              ],
+              "investors_detailed": [
+                {
+                  "name": "Accel",
+                  "uuid": "b08efc27-da40-505a-6f9d-c9e14247bf36",
+                  "type": "organization",
+                  "categories": [
+                    "venture_capital"
+                  ],
+                  "permalink": "accel"
+                },
+                {
+                  "name": "Accel-KKR",
+                  "uuid": "7c4b9a33-2f0e-4c1e-9a55-0e7c5e2a6b11",
+                  "type": "organization",
+                  "categories": [
+                    "private_equity_firm"
+                  ],
+                  "permalink": "accel-kkr"
+                },
+                {
+                  "name": "Lightspeed Venture Partners",
+                  "uuid": "1f6a2b9c-4d3e-4f5a-8b7c-9d0e1f2a3b4c",
+                  "type": "organization",
+                  "categories": [
+                    "venture_capital"
+                  ],
+                  "permalink": "lightspeed-venture-partners"
+                },
+                {
+                  "name": "Tiger Global Management",
+                  "uuid": "2a7b3c0d-5e4f-4a6b-9c8d-0e1f2a3b4c5d",
+                  "type": "organization",
+                  "categories": [
+                    "hedge_fund"
+                  ],
+                  "permalink": "tiger-global"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

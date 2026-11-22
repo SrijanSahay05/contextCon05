@@ -1,0 +1,34 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/web/search/live",
+  "request": {
+    "query": "Lumen Ledger",
+    "sources": [
+      "news"
+    ],
+    "page": 1
+  },
+  "headers": {
+    "x-credits-used": "1"
+  },
+  "response": {
+    "success": true,
+    "query": "Lumen Ledger",
+    "timestamp": 1775195371211,
+    "results": [
+      {
+        "source": "news",
+        "title": "Lumen Ledger crosses 400 employees",
+        "url": "https://news.example.com/lumen-ledger-400",
+        "snippet": "The Bengaluru-founded company now has 412 staff.",
+        "position": 1,
+        "date": "2026-11-03"
+      }
+    ],
+    "metadata": {
+      "total_results": 1,
+      "failed_pages": [],
+      "empty_pages": []
+    }
+  }
+}

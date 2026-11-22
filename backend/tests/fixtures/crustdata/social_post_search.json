@@ -1,0 +1,40 @@
+{
+  "_note": "shape from docs example; not live data",
+  "endpoint": "/social_post/search",
+  "request": {
+    "filters": {
+      "field": "text",
+      "type": "[.]",
+      "value": "Lumen Ledger"
+    },
+    "fields": [
+      "share_url",
+      "text",
+      "actor",
+      "date_posted",
+      "engagement"
+    ],
+    "limit": 1
+  },
+  "headers": {
+    "x-credits-used": "0.5"
+  },
+  "response": {
+    "posts": [
+      {
+        "actor": {
+          "actor_type": "person",
+          "name": "Ananya Rao"
+        },
+        "text": "Thrilled to welcome Accel-KKR as we scale Lumen Ledger.",
+        "date_posted": "2025-02-19T07:17:40Z",
+        "engagement": {
+          "total_reactions": 139
+        },
+        "share_url": "https://www.linkedin.com/posts/ananya-rao_activity-7499191937820889089"
+      }
+    ],
+    "next_cursor": "H4sIAOIQqGoC_xXMTQrDIBBA4asE...",
+    "total_count": 1
+  }
+}
