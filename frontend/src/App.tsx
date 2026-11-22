@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Backdrop } from './components/Backdrop/Backdrop'
 import { Composer } from './components/Composer/Composer'
 import { Cursor } from './components/Cursor/Cursor'
 import { Sidebar } from './components/Sidebar/Sidebar'
@@ -37,6 +38,7 @@ function App() {
 
   return (
     <div className="app">
+      <Backdrop />
       <Cursor />
       <Sidebar active={route.page === 'folder' ? route.folder : null} counts={store.counts} />
 
