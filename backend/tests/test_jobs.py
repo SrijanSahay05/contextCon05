@@ -12,6 +12,9 @@ from app.services.jobs.registry import HANDLERS
 from app.services.jobs.steps import StepRunner, ensure_budget
 from app.worker import run_once
 
+# well in the past: the queue compares against the DB clock, which may lag Python's
+PAST = datetime.now(timezone.utc) - timedelta(hours=1)
+
 
 def _job(db: Session, kind: str, key: str) -> tuple[Run, Job]:
     run = queue.create_run(db, RunKind.search, {"test": key})
@@ -41,7 +44,7 @@ def test_crash_after_first_step_resumes_without_repeating_it(db: Session) -> Non
     db.refresh(job)
     assert job.status == RunStatus.queued and job.attempts == 1
 
-    job.run_after = datetime.now(timezone.utc)  # skip the backoff delay
+    job.run_after = PAST  # skip the backoff delay
     db.commit()
     assert run_once(db, "w1")
 
@@ -73,7 +76,7 @@ def test_job_is_held_after_max_attempts(db: Session) -> None:
     HANDLERS["test_always_fails"] = always_fails
     run, job = _job(db, "test_always_fails", "fail-1")
     for _ in range(job.max_attempts):
-        job.run_after = datetime.now(timezone.utc)
+        job.run_after = PAST
         db.commit()
         run_once(db, "w1")
         db.refresh(job)
