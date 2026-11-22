@@ -1,7 +1,7 @@
 import { animate } from 'animejs'
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { EXIT_EASE, prefersReducedMotion, springUI } from '../../lib/motion'
-import type { Folder, Item, StartupDetail } from '../../types/startup'
+import type { Folder, Item } from '../../types/startup'
 import { Close, Expand } from '../Icons/Icons'
 import { Monogram } from '../Monogram/Monogram'
 import { ScoreRing } from '../ScoreRing/ScoreRing'
@@ -17,7 +17,6 @@ interface Props {
   onOpenPage: () => void
   onMove: (to: Folder) => void
   onSchedule: () => void
-  onDetailLoaded: (id: string, detail: StartupDetail) => void
 }
 
 /** Offset from the panel's centre to the origin card's centre, damped so it hints rather than flies. */
@@ -30,7 +29,7 @@ function offsetToOrigin(panel: HTMLElement, origin: DOMRect | null) {
   }
 }
 
-export function StartupModal({ item, origin, onClose, onOpenPage, onMove, onSchedule, onDetailLoaded }: Props) {
+export function StartupModal({ item, origin, onClose, onOpenPage, onMove, onSchedule }: Props) {
   const scrim = useRef<HTMLDivElement>(null)
   const panel = useRef<HTMLDivElement>(null)
   const closing = useRef(false)
@@ -121,7 +120,7 @@ export function StartupModal({ item, origin, onClose, onOpenPage, onMove, onSche
             <ScoreRing score={item.score} size="lg" />
           </header>
 
-          <StartupDetails item={item} onDetailLoaded={onDetailLoaded} />
+          <StartupDetails item={item} />
         </div>
 
         <footer className="modal__footer">

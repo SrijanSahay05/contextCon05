@@ -1,6 +1,5 @@
 import { animate, stagger } from 'animejs'
 import { useEffect, useRef, type ReactNode } from 'react'
-import { useStartupDetail } from '../../hooks/useStartupDetail'
 import { formatDate, growthPct } from '../../lib/format'
 import { prefersReducedMotion } from '../../lib/motion'
 import type { Item, ScoreBreakdown, StartupDetail } from '../../types/startup'
@@ -28,16 +27,6 @@ function Section({ icon, title, children }: { icon: ReactNode; title: string; ch
 
 function Empty({ children }: { children: ReactNode }) {
   return <p className="details__empty">{children}</p>
-}
-
-function Skeleton() {
-  return (
-    <div className="details__skeleton" aria-hidden="true">
-      <span />
-      <span />
-      <span />
-    </div>
-  )
 }
 
 function ScoreSection({ item }: { item: Item }) {
@@ -191,43 +180,16 @@ function FundingSection({ detail }: { detail: StartupDetail }) {
 interface Props {
   item: Item
   layout?: 'compact' | 'full'
-  onDetailLoaded: (id: string, detail: StartupDetail) => void
 }
 
 /** The body shared by the quick-look modal and the full startup page. */
-export function StartupDetails({ item, layout = 'compact', onDetailLoaded }: Props) {
-  const { detail, loading, error, retry } = useStartupDetail(item, onDetailLoaded)
-
+export function StartupDetails({ item, layout = 'compact' }: Props) {
   return (
     <div className={`details details--${layout}`}>
       <ScoreSection item={item} />
-
-      {detail ? (
-        <>
-          <HiringSection detail={detail} />
-          <NewsSection detail={detail} />
-          <FundingSection detail={detail} />
-        </>
-      ) : error ? (
-        <section className="details__section details__error">
-          <p>{error}</p>
-          <button type="button" className="btn btn--tinted" onClick={retry}>
-            Try again
-          </button>
-        </section>
-      ) : loading ? (
-        <>
-          {['Hiring', 'News', 'Grants & funding'].map((t) => (
-            <Section key={t} icon={<span className="details__spinner" />} title={`Loading ${t.toLowerCase()}…`}>
-              <Skeleton />
-            </Section>
-          ))}
-        </>
-      ) : null}
-
-      <p className="details__source">
-        {item.source === 'sample' ? 'Sample data, fictional company.' : 'Source: Crustdata company records.'}
-      </p>
+      <HiringSection detail={item.detail} />
+      <NewsSection detail={item.detail} />
+      <FundingSection detail={item.detail} />
     </div>
   )
 }

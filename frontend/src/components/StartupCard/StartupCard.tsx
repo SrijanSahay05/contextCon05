@@ -78,7 +78,6 @@ export function StartupCard({ item, onMove, onSchedule, onOpen }: Props) {
             <span className="card__meta">
               {item.stage} · {item.city}
               {item.founded ? ` · Founded ${item.founded}` : ''}
-              {item.source === 'sample' ? ' · Sample' : ''}
             </span>
           </header>
           <p className="card__tagline">{item.tagline}</p>

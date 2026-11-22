@@ -34,10 +34,7 @@
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow-md);
-  transition: opacity 300ms ease;
-}
-.folder-page__sheet.is-busy {
-  opacity: 0.45;
+  overflow: hidden;
 }
 
 .folder-page__empty {

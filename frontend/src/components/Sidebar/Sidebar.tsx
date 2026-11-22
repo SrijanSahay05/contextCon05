@@ -88,7 +88,7 @@ export function Sidebar({ active, counts }: Props) {
         ))}
       </nav>
 
-      <p className="sidebar__note">Live data from Crustdata</p>
+      <p className="sidebar__note">Sample data · prototype</p>
     </aside>
   )
 }

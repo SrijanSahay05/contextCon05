@@ -34,19 +34,14 @@ export interface ScoreBreakdown {
   timing: number | null
 }
 
-/** What a search returns for each startup. */
-export interface StartupSummary {
+export interface Startup {
   id: string
-  source: 'sample' | 'crustdata'
-  crustdataId?: number
   name: string
   tagline: string
   sector: string
   stage: string
   city: string
   founded: number | null
-  domain?: string | null
-  profileUrl?: string | null
   /** Overall fit, 0–100. */
   score: number
   breakdown: ScoreBreakdown
@@ -58,9 +53,10 @@ export interface StartupSummary {
   /** Days until the backend re-checks this company, set from its history. */
   cadenceDays: number
   hue: number
+  detail: StartupDetail
 }
 
-/** The deeper record behind the overlay and the full page, fetched on demand. */
+/** The deeper record behind the overlay and the full page. */
 export interface StartupDetail {
   headcount: { now: number | null; sixMonthsAgo: number | null }
   news: NewsItem[]
@@ -71,31 +67,12 @@ export interface StartupDetail {
   openRoles: string[]
 }
 
-export interface Item extends StartupSummary {
+export interface Item extends Startup {
   folder: Folder
   /** Where a discarded startup came from, so Restore can put it back. */
   previousFolder?: Folder
   outreach?: { status: OutreachStatus; nextStep: string }
-  detail?: StartupDetail
-}
-
-export interface SearchPlan {
-  query: string
-  country: string | null
-  foundedAfter: number | null
-  minHeadcount: number | null
-  maxHeadcount: number | null
-  planner: 'claude' | 'rules'
-}
-
-export interface SearchResponse {
-  plan: SearchPlan
-  startups: Omit<StartupSummary, 'source'>[]
-  creditsUsed: number
 }
 
 /** The state of the latest thesis search, shown under the composer. */
-export type SearchStatus =
-  | { state: 'busy'; thesis: string }
-  | { state: 'done'; thesis: string; plan: SearchPlan; count: number; credits: number }
-  | { state: 'error'; thesis: string; message: string }
+export type SearchStatus = { state: 'busy' | 'done'; thesis: string }

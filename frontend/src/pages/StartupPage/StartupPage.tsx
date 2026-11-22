@@ -8,18 +8,17 @@ import { StartupDetails } from '../../components/StartupDetails/StartupDetails'
 import { folderMeta } from '../../data/folders'
 import { hrefFor } from '../../hooks/useHashRoute'
 import { prefersReducedMotion, springUI } from '../../lib/motion'
-import type { Folder, Item, StartupDetail } from '../../types/startup'
+import type { Folder, Item } from '../../types/startup'
 import './StartupPage.css'
 
 interface Props {
   item: Item | undefined
   onMove: (id: string, to: Folder) => void
   onSchedule: (id: string) => void
-  onDetailLoaded: (id: string, detail: StartupDetail) => void
 }
 
 /** The full page for one startup. Actions keep you here; the status chip updates. */
-export function StartupPage({ item, onMove, onSchedule, onDetailLoaded }: Props) {
+export function StartupPage({ item, onMove, onSchedule }: Props) {
   const root = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
@@ -58,25 +57,7 @@ export function StartupPage({ item, onMove, onSchedule, onDetailLoaded }: Props)
             <li className="chip">{item.city}</li>
             {item.founded && <li className="chip">Founded {item.founded}</li>}
           </ul>
-          <p className="startup-page__founders">
-            {item.teamLine}
-            {item.domain && (
-              <>
-                {' · '}
-                <a className="startup-page__link" href={`https://${item.domain}`} target="_blank" rel="noreferrer">
-                  {item.domain}
-                </a>
-              </>
-            )}
-            {item.profileUrl && (
-              <>
-                {' · '}
-                <a className="startup-page__link" href={item.profileUrl} target="_blank" rel="noreferrer">
-                  Company profile
-                </a>
-              </>
-            )}
-          </p>
+          <p className="startup-page__founders">{item.teamLine}</p>
         </div>
         <ScoreRing score={item.score} size="lg" />
       </header>
@@ -90,7 +71,7 @@ export function StartupPage({ item, onMove, onSchedule, onDetailLoaded }: Props)
         />
       </div>
 
-      <StartupDetails item={item} layout="full" onDetailLoaded={onDetailLoaded} />
+      <StartupDetails item={item} layout="full" />
     </div>
   )
 }

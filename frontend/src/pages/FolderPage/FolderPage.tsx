@@ -1,7 +1,9 @@
 import { animate, stagger } from 'animejs'
 import { useLayoutEffect, useRef, type ReactNode } from 'react'
+import { ScoutingAnimation } from '../../components/ScoutingAnimation/ScoutingAnimation'
 import { StartupCard } from '../../components/StartupCard/StartupCard'
 import { folderMeta } from '../../data/folders'
+import { useScoutingPhase } from '../../hooks/useScoutingPhase'
 import { prefersReducedMotion, springUI } from '../../lib/motion'
 import type { Folder, Item } from '../../types/startup'
 import './FolderPage.css'
@@ -23,9 +25,11 @@ export function FolderPage({ folder, items, runId, busy, intro, onMove, onSchedu
   const meta = folderMeta(folder)
   const list = useRef<HTMLDivElement>(null)
   const isDiscover = folder === 'discover'
+  const { phase, onExited } = useScoutingPhase(busy, list)
 
-  // Stagger cards in when the folder changes or a new search lands.
+  // Stagger cards in when the folder changes, or when the list returns after a search.
   useLayoutEffect(() => {
+    if (phase !== 'list') return
     const cards = list.current?.children
     if (!cards?.length) return
     if (prefersReducedMotion()) {
@@ -33,7 +37,7 @@ export function FolderPage({ folder, items, runId, busy, intro, onMove, onSchedu
       return
     }
     animate(cards, { opacity: [0, 1], y: [14, 0], delay: stagger(45), ease: springUI() })
-  }, [folder, runId])
+  }, [folder, runId, phase])
 
   return (
     <div className={`folder-page${isDiscover ? ' folder-page--hero' : ''}`}>
@@ -43,13 +47,19 @@ export function FolderPage({ folder, items, runId, busy, intro, onMove, onSchedu
         {intro}
       </header>
 
-      <section className={`folder-page__sheet${busy ? ' is-busy' : ''}`} aria-label={meta.label}>
-        <div ref={list} key={`${folder}-${runId}`}>
-          {items.map((item) => (
-            <StartupCard key={item.id} item={item} onMove={onMove} onSchedule={onSchedule} onOpen={onOpen} />
-          ))}
-        </div>
-        {items.length === 0 && <p className="folder-page__empty">{meta.empty}</p>}
+      <section className="folder-page__sheet" aria-label={meta.label} aria-busy={busy}>
+        {phase === 'scouting' ? (
+          <ScoutingAnimation leaving={!busy} onExited={onExited} />
+        ) : (
+          <>
+            <div ref={list} key={`${folder}-${runId}`}>
+              {items.map((item) => (
+                <StartupCard key={item.id} item={item} onMove={onMove} onSchedule={onSchedule} onOpen={onOpen} />
+              ))}
+            </div>
+            {items.length === 0 && <p className="folder-page__empty">{meta.empty}</p>}
+          </>
+        )}
       </section>
     </div>
   )

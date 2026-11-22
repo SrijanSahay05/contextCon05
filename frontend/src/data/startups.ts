@@ -1,12 +1,11 @@
 // Sample data for the design prototype. Every company, person and event here
-// is fictional. In the real product the backend builds these from Crustdata.
+// is fictional.
 
 import type { Item } from '../types/startup'
 
 export const SAMPLE_STARTUPS: Item[] = [
   {
     id: 'ledgerline',
-    source: 'sample',
     name: 'Ledgerline',
     tagline: 'Autonomous accounts payable for mid-market Indian manufacturers.',
     sector: 'Fintech · B2B SaaS',
@@ -50,7 +49,6 @@ export const SAMPLE_STARTUPS: Item[] = [
   },
   {
     id: 'freightwise',
-    source: 'sample',
     name: 'Freightwise',
     tagline: 'Real-time freight pricing for India–GCC shipping lanes.',
     sector: 'Logistics · Marketplace',
@@ -91,7 +89,6 @@ export const SAMPLE_STARTUPS: Item[] = [
   },
   {
     id: 'clinicaloop',
-    source: 'sample',
     name: 'Clinicaloop',
     tagline: 'Clinical-trial site matching for Indian CROs.',
     sector: 'Healthtech · B2B',
@@ -134,7 +131,6 @@ export const SAMPLE_STARTUPS: Item[] = [
   },
   {
     id: 'kiln',
-    source: 'sample',
     name: 'Kiln Robotics',
     tagline: 'Vision QA for ceramic and tile production lines.',
     sector: 'Deeptech · Manufacturing',
@@ -175,7 +171,6 @@ export const SAMPLE_STARTUPS: Item[] = [
   },
   {
     id: 'tessera',
-    source: 'sample',
     name: 'Tessera',
     tagline: 'Compliance copilot for Indian NBFCs.',
     sector: 'Fintech · RegTech',
@@ -216,7 +211,6 @@ export const SAMPLE_STARTUPS: Item[] = [
   },
   {
     id: 'sowfield',
-    source: 'sample',
     name: 'Sowfield',
     tagline: 'Input financing for smallholder farmers, underwritten on satellite data.',
     sector: 'Agritech · Fintech',
@@ -258,7 +252,6 @@ export const SAMPLE_STARTUPS: Item[] = [
   },
   {
     id: 'quillstack',
-    source: 'sample',
     name: 'Quillstack',
     tagline: 'AI document review for Indian law firms.',
     sector: 'Legaltech · AI',

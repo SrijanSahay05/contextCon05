@@ -64,10 +64,3 @@
     display: none;
   }
 }
-
-.startup-page__link {
-  color: var(--accent);
-}
-.startup-page__link:hover {
-  text-decoration: underline;
-}
