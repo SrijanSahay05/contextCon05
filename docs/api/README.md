@@ -128,7 +128,7 @@ send the whole object back.
 ### Outreach (screen: candidate page, outreach panel)
 
 1. `POST /candidates/{id}/outreach` `{channel: email|linkedin, purpose: call_request|follow_up}` → draft.
-2. `PUT /outreach/{id}` `{to_address?, subject?, body?}` while `draft`.
+2. `PUT /outreach/{id}` `{to_address?, subject?, body?}` while `draft` or `approved`; editing an approved message sends it back to `draft` for re-approval.
 3. `POST /outreach/{id}/approve`.
 4. `POST /outreach/{id}/send` (Gmail) **or** `POST /outreach/{id}/mark-sent` (sent by hand).
 

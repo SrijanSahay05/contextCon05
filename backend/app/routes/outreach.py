@@ -38,7 +38,8 @@ def create_outreach(
 def edit_outreach(
     outreach_id: UUID, body: OutreachEdit, investor_id: InvestorId, db: Db
 ) -> OutreachOut:
-    """Edit a `draft` message (also the DD request draft). 409 once approved."""
+    """Edit a message (also the DD request draft). Editing an `approved` message sends it
+    back to `draft`, so the changed text must be approved again. 409 once sent."""
     row = service.edit(db, investor_id, outreach_id, body)
     db.commit()
     return repo.out(row)

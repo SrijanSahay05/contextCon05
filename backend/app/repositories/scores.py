@@ -116,9 +116,20 @@ def snapshots(db: Session, candidate_id: uuid.UUID) -> Sequence[ScoreSnapshot]:
 
 
 def replace_signals(db: Session, candidate_id: uuid.UUID, drafts: list[Any]) -> None:
-    db.execute(delete(Signal).where(Signal.candidate_id == candidate_id))
-    db.add_all(Signal(candidate_id=candidate_id, kind=d.kind, text=d.text,
-                      fact_ids=list(d.fact_ids), claim_ids=list(d.claim_ids)) for d in drafts)
+    """Keep signals that still hold (same kind and text) so their ids, and the questions
+    pointing at them, survive a rescore; drop the rest and add new ones."""
+    existing = {(s.kind, s.text): s for s in db.scalars(
+        select(Signal).where(Signal.candidate_id == candidate_id))}
+    wanted = {(d.kind, d.text): d for d in drafts}
+    stale = [s.id for key, s in existing.items() if key not in wanted]
+    if stale:
+        db.execute(delete(Signal).where(Signal.id.in_(stale)))
+    for key, d in wanted.items():
+        if key in existing:
+            existing[key].fact_ids, existing[key].claim_ids = list(d.fact_ids), list(d.claim_ids)
+        else:
+            db.add(Signal(candidate_id=candidate_id, kind=d.kind, text=d.text,
+                          fact_ids=list(d.fact_ids), claim_ids=list(d.claim_ids)))
 
 
 # --- the candidate view ---------------------------------------------------------------
