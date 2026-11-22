@@ -7,10 +7,11 @@ import uuid
 from datetime import date
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.errors import ApiError, ErrorCode
+from app.models.actions import Memo
 from app.models.entities import Company
 from app.models.enums import SignalKind, SnapshotTrigger
 from app.models.search import Candidate, ScoreSnapshot, Search
@@ -97,6 +98,8 @@ def score_candidate(
         # clock_timestamp, not now(): several snapshots in one transaction stay ordered
         created_at=func.clock_timestamp(),
     ))
+    # a memo describes the score it was written from; any rescore makes it stale
+    db.execute(update(Memo).where(Memo.candidate_id == candidate.id).values(stale=True))
     db.flush()
     db.refresh(candidate)
     return candidate
