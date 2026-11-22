@@ -48,6 +48,15 @@ def upstream_errors() -> Iterator[None]:
                        {"reason": str(exc)[:300]}) from exc
 
 
+def partner_enrich_body(linkedin_url: str) -> dict[str, Any]:
+    """Without `fields` Crustdata returns only the basic profile (no employer), so ask for
+    experience too. The thesis job sends the same body, so its call is a cache hit."""
+    return {
+        "professional_network_profile_urls": [linkedin_url],
+        "fields": ["basic_profile", "experience"],
+    }
+
+
 def _current_job(person: dict[str, Any], prefer: set[int]) -> dict[str, Any]:
     current = ((person.get("experience") or {}).get("employment_details") or {}).get("current")
     jobs = list(current or [])
@@ -88,7 +97,7 @@ def parse_person(person: dict[str, Any], prefer: set[int] | None = None) -> dict
 def _by_linkedin(linkedin_url: str) -> list[tuple[dict[str, Any], uuid.UUID, str]]:
     crust = clients_for_run(None).crustdata
     try:
-        result = crust.person_enrich({"professional_network_profile_urls": [linkedin_url]})
+        result = crust.person_enrich(partner_enrich_body(linkedin_url))
     except CrustdataBadRequest:
         return []  # the URL doesn't resolve to a person: the partner tries name + firm
     out = []
